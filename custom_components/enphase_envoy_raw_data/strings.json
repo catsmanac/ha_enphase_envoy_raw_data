@@ -1,0 +1,122 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "For firmware version 7.0 and later, enter the Enphase cloud credentials, for older models, enter username `installer` without a password.",
+        "data": {
+          "host": "Host",
+          "username": "Username",
+          "password": "Password"
+        },
+        "data_description": {
+          "host": "The hostname or IP address of your Enphase Envoy gateway.",
+          "username": "Installer or Enphase Cloud username",
+          "password": "Blank or Enphase Cloud password"
+        }
+      },
+      "reconfigure": {
+        "description": "For firmware version 7.0 and later, enter the Enphase cloud credentials, for older models, enter username `installer` without a password.",
+        "data": {
+          "host": "Host",
+          "username": "Username",
+          "password": "Password"
+        },
+        "data_description": {
+          "host": "The hostname or IP address of your Enphase Envoy gateway.",
+          "username": "Installer or Enphase Cloud username",
+          "password": "Blank or Enphase Cloud password"
+       }
+      },
+      "reauth_confirm": {
+        "description": "For firmware version 7.0 and later, enter the Enphase cloud credentials, for older models, enter username `installer` without a password.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        },
+        "data_description": {
+          "username": "Installer or Enphase Cloud username",
+          "password": "Blank or Enphase Cloud password"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]"
+    },
+    "abort": {
+      "single_instance_allowed": "Service is already configured. Only a single configuration possible."
+    }
+  },
+  "exceptions": {
+    "unexpected_device": {
+      "message": "Unexpected Envoy serial-number found at {host}; expected {expected_serial}, found {actual_serial}"
+    },
+    "authentication_error": {
+      "message": "Envoy authentication failure on {host}: {args}"
+    },
+    "envoy_error": {
+      "message": "Error communicating with Envoy API on {host}: {args}"
+    },
+    "not_initialized": {
+      "message": "Enphase_Envoy_raw_data is not yet initialized {args}"
+    },
+    "envoy_service_no_config": {
+      "message": "No Enphase_Envoy_raw_data configuration entry found: {args}"
+    },
+    "not_acknowledged": {
+      "message": "Risk of using service: {args}, is not acknowledged"
+    },
+    "envoy_service_invalid_parameter": {
+      "message": "Invalid parameters {args}"
+    }
+  },
+  "services": {
+    "read_data": {
+      "name": "Read data",
+      "description": "Read data from Envoy.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Envoy entry",
+          "description": "Envoy to read data from."
+        },
+        "endpoint": {
+          "name": "Endpoint",
+          "description": "Envoy Endpoint to read data from, starts with /."
+        },
+        "from_cache": {
+          "name": "From cache",
+          "description": "Read data from local cache to avoid repeated endpoint queries for same endpoint. If data is not in cache, it will be read from Envoy and stored in the cache. Make sure to set this flag to False once in a while to force cache update for this endpoint."
+        }
+      }
+    },
+    "send_data": {
+      "name": "Send data",
+      "description": "Send data to Envoy.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Envoy entry",
+          "description": "Envoy to send data to."
+        },
+        "endpoint": {
+          "name": "Endpoint",
+          "description": "Envoy Endpoint to send data to, starts with /."
+        },
+        "data": {
+          "name": "Data",
+          "description": "JSON Data to send to Envoy."
+        },
+        "method": {
+          "name": "Send method",
+          "description": "Select send method to use. Either PUT or POST."
+        },
+        "risk_acknowledged": {
+          "name": "Risk acknowledgement",
+          "description": "I acknowledge and accept the risk sending (incorrectly formatted) data to the envoy may impact its proper operation."
+        },
+        "test_mode": {
+          "name": "Test mode",
+          "description": "When test mode is set, data is not actually send to the envoy. Parameters are validated and the passed data is returned as dict."
+        }
+      }
+    }
+  }
+}

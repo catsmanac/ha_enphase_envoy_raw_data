@@ -1,0 +1,10 @@
+{
+  "services": {
+    "read_data": {
+      "service": "mdi:download-box-outline"
+    },
+    "send_data": {
+      "service": "mdi:upload-box-outline"
+    }
+  }
+}

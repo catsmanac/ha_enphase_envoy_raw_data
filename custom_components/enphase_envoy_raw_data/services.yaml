@@ -1,0 +1,51 @@
+read_data:
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        config_entry:
+          integration: enphase_envoy_raw_data
+    endpoint:
+      required: true
+      example: "/"
+      selector:
+        text:
+    from_cache:
+      required: false
+      example: "false"
+      selector:
+        boolean:
+send_data:
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        config_entry:
+          integration: enphase_envoy_raw_data
+    endpoint:
+      required: true
+      example: "/"
+      selector:
+        text:
+    data:
+      required: true
+      selector:
+        text:
+    risk_acknowledged:
+      required: true
+      default: false
+      selector:
+        boolean:
+    method:
+      required: true
+      default: "POST"
+      selector:
+        select:
+          options:
+            - "POST"
+            - "PUT"
+    test_mode:
+      required: true
+      default: true
+      selector:
+        boolean:
