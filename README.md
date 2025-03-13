@@ -286,3 +286,8 @@ The response of PUT or POST request is returned as JSON with the specified endpo
 ## Usage considerations
 
 - When using the send-data action service, while also using the core (or other custom) integration, consider triggering a data refresh in the core integration as a next step in the automation. This will assure that any changes in effect by the PUT or POST will be read back and are reflected in any entities.
+
+
+## Credits
+
+Based on the work of the [Enphase Envoy core integration](https://www.home-assistant.io/integrations/enphase_envoy/) ([enphase_envoy](https://github.com/home-assistant/core/tree/dev/homeassistant/components/enphase_envoy)) and [pyenphase](https://github.com/pyenphase/pyenphase).
