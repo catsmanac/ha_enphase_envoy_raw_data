@@ -286,6 +286,8 @@ The response of PUT or POST request is returned as JSON with the specified endpo
 ## Usage considerations
 
 - When using the send-data action service, while also using the core (or other custom) integration, consider triggering a data refresh in the core integration as a next step in the automation. This will assure that any changes in effect by the PUT or POST will be read back and are reflected in any entities.
+- Read-data returns a json object with the endpoint as key. When using the data be aware of this. For example endpoint xyz/abc that returns `{"a":"1","b":"2"}` will result in `result = {"xyz/abc":{"a":"1","b":"2"}}`. To use the data be aware to use `actual_value=result["xyz/abc"]`.
+- Send-data in test mode returns the passed data as a json object. Unlike read_data there is no key for the endpoint inserted.
 
 
 ## Credits
