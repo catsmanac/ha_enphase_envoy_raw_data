@@ -75,7 +75,7 @@ Upon successful configuration, the integration can be found in the Home Assistan
 
 This service action enables sending a GET request to an Envoy endpoint and receive the reply. For instance, use it in the Home Assistant [Developers Tools Actions](https://www.home-assistant.io/docs/tools/dev-tools/#actions-tab) to inspect raw Envoy data.
 
-<details><summary>Example screenshots of Developer tools actions with Enphase_Envoy_raw_data</summary>
+<details><summary>Example screenshots of Developer tools actions with Enphase_Envoy_raw_data read_data</summary>
 
 ![picture of Developer tools actions with Enphase_Envoy_raw_data](docs/Enphase_Envoy_raw_data_action_read_data.png "Developer tools actions with Enphase Envoy raw data")
 
@@ -141,10 +141,20 @@ Response data for endpoint `/api/v1/production/inverters`
 
 ```JSON
 {
-  "/api/v1/production/inverters":[
-    {"serialNumber":"123456789013","lastReportDate":1695752919,"devType":1,"lastReportWatts":0,"maxReportWatts":361},
-    {"serialNumber":"123456789045","lastReportDate":1695752947,"devType":1,"lastReportWatts":0,"maxReportWatts":360},
-  ]
+    "/api/v1/production/inverters": [{
+            "serialNumber": "123456789013",
+            "lastReportDate": 1695752919,
+            "devType": 1,
+            "lastReportWatts": 0,
+            "maxReportWatts": 361
+        }, {
+            "serialNumber": "123456789045",
+            "lastReportDate": 1695752947,
+            "devType": 1,
+            "lastReportWatts": 0,
+            "maxReportWatts": 360
+        },
+    ]
 }
 ```
 </details>
@@ -152,7 +162,7 @@ Response data for endpoint `/api/v1/production/inverters`
 
 The response variable can then be used to work with the returned data.
 
-<details><summary>Example automation running daily at 2 am</summary>
+<details><summary>Example automation running daily at 2 am getting inverter data</summary>
 
 Automation getting inverter data and writing to notification and input_text.
 
@@ -198,7 +208,7 @@ mode: single
 
 This service action enables sending a PUT or POST request to an Envoy endpoint and receive the reply. 
 
-<details><summary>Example screenshots of Developer tools actions with Enphase_Envoy_raw_data</summary>
+<details><summary>Example screenshots of Developer tools actions with Enphase_Envoy_raw_data send_data</summary>
 
 ![picture of Developer tools actions with Enphase_Envoy_raw_data](docs/Enphase_Envoy_raw_data_action_send_data.png "Developer tools actions with Enphase Envoy raw data")
 
@@ -218,7 +228,7 @@ This service action enables sending a PUT or POST request to an Envoy endpoint a
 | Send method | no | Specify `PUT` or `POST`. Which is needed depends on the endpoint and data send. Requires your expertise.|
 | Test mode | no | When set, does not send request to envoy, but rather returns the data as JSON so result can be verified.  See [test mode](#test-mode).|
 
-<details><summary>Developer tools actions Yaml example send dat with test mode enabled</summary>
+<details><summary>Developer tools actions Yaml example for send-data with test mode enabled</summary>
 
 #### Action
 
@@ -268,4 +278,11 @@ By now you should have realize that sending data may be a risky business. Safe-g
 - Enable `test mode` until certain about sending data.
 
 
+#### Response variable
 
+The response of PUT or POST request is returned as JSON with the specified endpoint as key.
+
+
+## Usage considerations
+
+- When using the send-data action service, while also using the core (or other custom) integration, consider triggering a data refresh in the core integration as a next step in the automation. This will assure that any changes in effect by the PUT or POST will be read back and are reflected in any entities.
