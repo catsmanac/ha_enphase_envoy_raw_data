@@ -302,7 +302,7 @@ The response of PUT or POST request is returned as JSON with the specified endpo
 
         To use the data be aware to use `actual_value=result["xyz/abc"]`.
 - When using the send-data action service, while also using the core (or other custom) integration, consider triggering a data refresh in the core integration as a next step in the automation. This will assure that any changes in effect by the PUT or POST will be read back and are reflected in any core entities.
-- To enable debug logging, either enable it on the [integration](#envoy_config) or add below to your configuration.yaml
+- To enable debug logging, either enable it on the integration or add below to your configuration.yaml
 ```yaml
     logger:
       default: warn
