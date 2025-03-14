@@ -12,7 +12,7 @@ It provides 2 service actions to access Enphase IQ Gateway raw data:
 > [!CAUTION]
 > ⚠️ Sending PUT/POST requests to the Envoy is at your own risk! Only use this service action if you fully understand the required data format, the effect on the Envoy/IQ Gateway and accept the risk of potential negative impact on the Envoy operation. Also be aware that each new firmware pushed to your Envoy/IQ Gateway may expose different behavior and PUT/POST request effects may suddenly change. ⚠️
 
-This integration provides no entities, for entities use the core integration or another custom integration. It does **NOT** replace the [HA Core integration](https://www.home-assistant.io/integrations/enphase_envoy/), both can be used at the same time. The intent is to provide additional specialized and more rarely used service actions which are not present in the core integration. It can run without the core integration, but the core integration would be needed to provide the [typical Envoy entities](https://www.home-assistant.io/integrations/enphase_envoy/#capabilities). 
+This integration provides no entities, for entities use the core [HA Core integration](https://www.home-assistant.io/integrations/enphase_envoy/) or another custom integration. It does **NOT** replace the core integration, both can be used at the same time. The intent is to provide additional specialized and more rarely used service actions which are not present in the core integration. It can run without the core integration, but the core integration would be needed to provide the [typical Envoy entities](https://www.home-assistant.io/integrations/enphase_envoy/#capabilities). 
 
 Under the hood, this custom integration is a stripped down fork of the HA core integration and it is using the same [pyenphase library](https://pypi.org/project/pyenphase/) for communication to the Enphase Envoy/IQ Gateway. Entity creation, scheduled data collection and auto detection are removed. Each Envoy needs to be added manually. Token handling and refresh for firmware version 7.0 and later is retained.
 
@@ -183,11 +183,13 @@ actions:
   - action: notify.persistent_notification
     metadata: {}
     data:
-      title: "First Inverter"
+      title: "First and second Inverter"
       message: >
         {# show in notifications #}
-        {{ pv_data["/api/v1/production/inverters"][0] }}
-  - action: input_text.set_value
+        {% set key = "/api/v1/production/inverters" %}
+        {{ pv_data[key][0] }}
+        {{ pv_data[key][1] }}
+- action: input_text.set_value
     metadata: {}
     data:
       value: >
@@ -212,7 +214,6 @@ This service action enables sending a PUT or POST request to an Envoy endpoint a
 
 ![picture of Developer tools actions with Enphase_Envoy_raw_data](docs/Enphase_Envoy_raw_data_action_send_data.png "Developer tools actions with Enphase Envoy raw data")
 
-> [!CAUTION]
 > ⚠️ Sending PUT/POST requests is at your own risk! Only use this service action if you fully understand the required data format, the effect on the Envoy/IQ Gateway and accept the risk of potential negative impact on the Envoy operation. Also be aware that each new firmware pushed to your Envoy/IQ Gateway may expose different behavior and PUT/POST request effects may suddenly change. ⚠️
 
 </details>
@@ -227,6 +228,10 @@ This service action enables sending a PUT or POST request to an Envoy endpoint a
 | Risk acknowledgement | no | This should be set to true as confirmation you are accepting the risk of this operation. If not set, the action will return an error. |
 | Send method | no | Specify `PUT` or `POST`. Which is needed depends on the endpoint and data send. Requires your expertise.|
 | Test mode | no | When set, does not send request to envoy, but rather returns the data as JSON so result can be verified.  See [test mode](#test-mode).|
+
+### Test mode
+
+Building the needed data structure using various methods available in Home Assistant may require some iterations. Before sending any final result, use the test mode to inspect the resulting data. With test mode enabled, the service will not send the data to the envoy, but rather return the JSON object that would have been send. Use the `Test mode` option until final result is acceptable for sending. As additional safe-guard a non-exiting endpoint can be used for this as no data is actually send.
 
 <details><summary>Developer tools actions Yaml example for send-data with test mode enabled</summary>
 
@@ -253,26 +258,24 @@ data:
 #### Response
 
 ```yaml
-coil1:
-  current: "1.0"
-  voltage: "110"
-  frequency: "50"
-target:
-  target: "60"
-  min: "25"
-  max: "93"
-runtime: "10"
-alert: false
+/test:
+  coil1:
+    current: "1.0"
+    voltage: "110"
+    frequency: "50"
+  target:
+    target: "60"
+    min: "25"
+    max: "93"
+  runtime: "10"
+  alert: false
+
 ```
 </details>
 
-### Test mode
-
-Building the needed data structure using various methods available in Home Assistant may require some iterations. Before sending any final result, use the test mode to inspect the resulting data. With test mode enabled, the service will return the JSON object that would be send to the Envoy so it can be inspected. Use the `Test mode` option until final result is acceptable for sending. As additional safe-guard a non-exiting endpoint can be used for this as no data is actually send.
-
 ### Safe-guards
 
-By now you should have realize that sending data may be a risky business. Safe-guards to use are:
+By now you should have realized that sending data may be a risky business. Safe-guards to use are:
 
 - Use a non existing endpoint like `/test` until certain about sending data.
 - Enable `test mode` until certain about sending data.
@@ -285,10 +288,19 @@ The response of PUT or POST request is returned as JSON with the specified endpo
 
 ## Usage considerations
 
-- When using the send-data action service, while also using the core (or other custom) integration, consider triggering a data refresh in the core integration as a next step in the automation. This will assure that any changes in effect by the PUT or POST will be read back and are reflected in any entities.
-- Read-data returns a json object with the endpoint as key. When using the data be aware of this. For example endpoint xyz/abc that returns `{"a":"1","b":"2"}` will result in `result = {"xyz/abc":{"a":"1","b":"2"}}`. To use the data be aware to use `actual_value=result["xyz/abc"]`.
-- Send-data in test mode returns the passed data as a json object. Unlike read_data there is no key for the endpoint inserted.
+- Read-data and send-data return a json object with the endpoint as key. When using the data be aware of this. For example endpoint xyz/abc that returns 
 
+```json
+    {"a":"1","b":"2"}
+```
+        will result in
+
+```json
+    {"xyz/abc":{"a":"1","b":"2"}}
+```
+
+        To use the data be aware to use `actual_value=result["xyz/abc"]`.
+- When using the send-data action service, while also using the core (or other custom) integration, consider triggering a data refresh in the core integration as a next step in the automation. This will assure that any changes in effect by the PUT or POST will be read back and are reflected in any core entities.
 
 ## Credits
 
