@@ -62,6 +62,7 @@ The Enlighten cloud username and password for firmware version 7.0 and later wil
 
 Upon successful configuration, the integration can be found in the Home Assistant integrations dashboard.
 
+<a name="envoy_config"></a>
 ![picture of configured envoy](docs/Enphase_Envoy_raw_data_added_envoy.png "Configured Envoy with Enphase Envoy raw data custom integration")
 
 
@@ -301,6 +302,13 @@ The response of PUT or POST request is returned as JSON with the specified endpo
 
         To use the data be aware to use `actual_value=result["xyz/abc"]`.
 - When using the send-data action service, while also using the core (or other custom) integration, consider triggering a data refresh in the core integration as a next step in the automation. This will assure that any changes in effect by the PUT or POST will be read back and are reflected in any core entities.
+- To enable debug logging, either enable it on the [integration](#envoy_config) or add below to your configuration.yaml
+```yaml
+    logger:
+      default: warn
+      logs:
+        custom_components.enphase_envoy_raw_data: debug
+```
 
 ## Credits
 
