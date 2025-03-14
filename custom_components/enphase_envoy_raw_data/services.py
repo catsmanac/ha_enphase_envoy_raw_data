@@ -74,6 +74,7 @@ def _find_envoy_coordinator(
 ) -> EnphaseRawDataUpdateCoordinator:
     """Find envoy config entry from service data and return envoy coordinator."""
     identifier = str(call.data.get(ATTR_CONFIG_ENTRY_ID))
+    _LOGGER.debug("Finding coordinator for %s", identifier)
     if not (entry := hass.config_entries.async_get_entry(identifier)):
         _raise_validation("envoy_service_no_config", identifier)
     if entry.state is not ConfigEntryState.LOADED:
@@ -103,6 +104,7 @@ async def _envoy_request(
     coordinator = _find_envoy_coordinator(hass, call)
     envoy_to_use = coordinator.envoy
     if from_cache and endpoint in envoy_to_use.data.raw:
+        _LOGGER.debug("Return data from cache %s", envoy_to_use.data.raw[endpoint])
         return envoy_to_use.data.raw[endpoint]
     try:
         reply: Response = await envoy_to_use.request(endpoint, data, method)
@@ -121,6 +123,7 @@ async def _envoy_request(
         result = orjson.loads(reply.content)
     except (orjson.JSONDecodeError, ValueError):
         # it's xml or html
+        _LOGGER.debug("No JSON data, decode it")
         result = reply.content.decode("utf-8")
     if to_cache:
         envoy_to_use.data.raw[endpoint] = result
@@ -133,6 +136,7 @@ async def setup_hass_services(hass: HomeAssistant) -> ServiceResponse:
     async def read_data_service(call: ServiceCall) -> ServiceResponse:
         """Send GET request to envoy."""
         endpoint = call.data[ATTR_ENDPOINT]
+        _LOGGER.debug("reading endpoint %s", endpoint)
         reply = await _envoy_request(
             hass,
             call,
@@ -163,6 +167,7 @@ async def setup_hass_services(hass: HomeAssistant) -> ServiceResponse:
             _raise_validation("not_acknowledged", call.service)
         endpoint = call.data[ATTR_ENDPOINT]
         data = call.data[ATTR_DATA]
+        _LOGGER.debug("sending to endpoint %s: %s", endpoint, data)
         try:
             # make data dict or list
             data_to_send = data if isinstance(data, (dict)) else orjson.loads(str(data))
@@ -175,6 +180,7 @@ async def setup_hass_services(hass: HomeAssistant) -> ServiceResponse:
         # if in validate mode return data to send
         if call.data.get(ATTR_VALIDATE_MODE):
             try:
+                _LOGGER.debug("In test mode, returning data as is:%s", data_to_send)
                 return {endpoint: data_to_send}
             except TypeError as err:
                 _raise_validation(
