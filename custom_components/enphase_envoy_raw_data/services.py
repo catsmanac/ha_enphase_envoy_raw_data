@@ -175,7 +175,7 @@ async def setup_hass_services(hass: HomeAssistant) -> ServiceResponse:
         # if in validate mode return data to send
         if call.data.get(ATTR_VALIDATE_MODE):
             try:
-                return dict(data_to_send)
+                return {endpoint: data_to_send}
             except TypeError as err:
                 _raise_validation(
                     "envoy_service_invalid_parameter",
@@ -195,7 +195,7 @@ async def setup_hass_services(hass: HomeAssistant) -> ServiceResponse:
                 f", Error: {err.args[0]}, Data: {data}",
             )
 
-        return dict(reply)
+        return {endpoint: reply}
 
     # declare SEND request services
     hass.services.async_register(
