@@ -40,7 +40,7 @@
       }
     },
     "error": {
-      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]"
+      "cannot_connect": "Failed to connect: {reason}"
     },
     "abort": {
       "single_instance_allowed": "Service is already configured. Only a single configuration possible."
