@@ -82,23 +82,11 @@ class EnphaseExtConfigFlow(ConfigFlow, domain=DOMAIN):
         """Generate schema."""
         schema: VolDictType = {}
 
-        if self.ip_address:
-            schema[vol.Required(CONF_HOST, default=self.ip_address)] = vol.In(
-                [self.ip_address]
-            )
-        elif self.source != SOURCE_REAUTH:
+        if self.source != SOURCE_REAUTH:
             schema[vol.Required(CONF_HOST)] = str
 
-        default_username = ""
-        if (
-            not self.username
-            and self.protovers
-            and AwesomeVersion(self.protovers) < AUTH_TOKEN_MIN_VERSION
-        ):
-            default_username = INSTALLER_AUTH_USERNAME
-
         schema[
-            vol.Optional(CONF_USERNAME, default=self.username or default_username)
+            vol.Optional(CONF_USERNAME, default=self.username)
         ] = str
         schema[vol.Optional(CONF_PASSWORD, default="")] = str
 
@@ -151,12 +139,6 @@ class EnphaseExtConfigFlow(ConfigFlow, domain=DOMAIN):
                 return self.async_create_entry(
                     title=name, data={CONF_HOST: host, CONF_NAME: name} | user_input
                 )
-
-        if self.unique_id:
-            self.context["title_placeholders"] = {
-                CONF_SERIAL: self.unique_id.replace(UNIQUE_ID, ""),
-                CONF_HOST: host,
-            }
 
         suggested_values: Mapping[str, Any] | None = user_input
         return self.async_show_form(
