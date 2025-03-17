@@ -185,17 +185,11 @@ async def setup_hass_services(hass: HomeAssistant) -> ServiceResponse:
 
         # if in validate mode return data to send
         if call.data.get(ATTR_VALIDATE_MODE):
-            try:
-                _LOGGER.debug(
-                    "send_data_service, test mode, not sending data, returning formatted data: %s",
-                    {endpoint: data_to_send},
-                )
-                return {endpoint: data_to_send}
-            except TypeError as err:
-                _raise_validation(
-                    "envoy_service_invalid_parameter",
-                    f", Error: {err.args[0]}, Data: {data}",
-                )
+            _LOGGER.debug(
+                "send_data_service, test mode, not sending data, returning formatted data: %s",
+                {endpoint: data_to_send},
+            )
+            return {endpoint: data_to_send}
         try:
             reply = await _envoy_request(
                 hass,
