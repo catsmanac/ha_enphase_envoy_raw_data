@@ -258,7 +258,7 @@ class EnphaseRawDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 new_firmware := envoy.firmware
             ):
                 _LOGGER.warning(
-                    "Envoy firmware changed from: %s to: %s, reloading enphase envoy integration",
+                    "Envoy firmware changed from: %s to: %s, reloading enphase envoy raw data integration",
                     current_firmware,
                     new_firmware,
                 )
