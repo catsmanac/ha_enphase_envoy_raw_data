@@ -16,6 +16,18 @@ This integration provides no entities, for entities use the core [HA Core integr
 
 Under the hood, this custom integration is a stripped down fork of the HA core integration and it is using the same [pyenphase library](https://pypi.org/project/pyenphase/) for communication to the Enphase Envoy/IQ Gateway. Entity creation, scheduled data collection and auto detection are removed. Each Envoy needs to be added manually. Token handling and refresh for firmware version 7.0 and later is retained.
 
+# Releases
+
+## 2.x.x
+
+As of Home Assistant version 2025.? the Enphase Envoy integration switched from using httpx library to using the aiohttp library. Which is a breaking change for this custom integration. Starting with Home Assistant 2025.? you must update to 2.0.0 or newer version.
+
+## 1.x.x
+
+First production versions. Only use with Home Assistant versions from 2025.3 to 2025.?-1.x.
+
+# Installation and Configuration
+
 <details>  
 <summary>Installation</summary>
 
@@ -71,6 +83,7 @@ Upon successful configuration, the integration can be found in the Home Assistan
 </details>
 
 ---------------
+# Services
 
 ## Read Data
 
