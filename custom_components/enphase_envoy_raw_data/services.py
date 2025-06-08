@@ -129,7 +129,7 @@ async def _envoy_request(
     except (orjson.JSONDecodeError, ValueError):
         # it's xml or html
         _LOGGER.debug("envoy_request, No JSON data returned, decode it")
-        result = response.text()
+        result = await response.text()
     if to_cache:
         envoy_to_use.data.raw[endpoint] = result
     return result
