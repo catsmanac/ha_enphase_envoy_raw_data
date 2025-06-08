@@ -15,10 +15,9 @@ from __future__ import annotations
 import logging
 from typing import Any, Never
 
-from httpx import HTTPError, Response
+from aiohttp import ClientError, ClientResponse
 import orjson
 from pyenphase import EnvoyError
-from pyenphase.const import URL_TARIFF
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigEntryState
@@ -41,7 +40,7 @@ ATTR_RISK_ACKNOWLEDGED = "risk_acknowledged"
 ATTR_VALIDATE_MODE = "test_mode"
 ATTR_FROM_CACHE = "from_cache"
 
-REQUESTERRORS = (EnvoyError, HTTPError)
+REQUESTERRORS = (EnvoyError, ClientError)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -110,27 +109,27 @@ async def _envoy_request(
         return envoy_to_use.data.raw[endpoint]
     try:
         _LOGGER.debug("envoy_request, sending request to %s", endpoint)
-        reply: Response = await envoy_to_use.request(endpoint, data, method)
+        response: ClientResponse = await envoy_to_use.request(endpoint, data, method)
     except REQUESTERRORS as err:
         _raise_ha_error(call, "envoy_error", envoy_to_use.host, err.args[0])
 
-    if not (200 <= reply.status_code < 300):
+    if not (200 <= response.status < 300):
         _raise_ha_error(
             call,
             "envoy_error",
             f"{envoy_to_use.host}{endpoint}",
-            f"{reply.status_code} {reply.reason_phrase}",
+            f"{response.status}"
         )
     _LOGGER.debug(
-        "envoy_request, request status %s %s", reply.status_code, reply.reason_phrase
+        "envoy_request, request status %s", response.status
     )
 
     try:
-        result = orjson.loads(reply.content)
+        result = orjson.loads(await response.read())
     except (orjson.JSONDecodeError, ValueError):
         # it's xml or html
         _LOGGER.debug("envoy_request, No JSON data returned, decode it")
-        result = reply.content.decode("utf-8")
+        result = response.text()
     if to_cache:
         envoy_to_use.data.raw[endpoint] = result
     return result

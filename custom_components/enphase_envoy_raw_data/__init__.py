@@ -20,8 +20,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.httpx_client import get_async_client
+from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN, UNIQUE_ID
@@ -43,7 +42,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Enphase Envoy raw data support from a config entry."""
 
     host = entry.data[CONF_HOST]
-    envoy = Envoy(host, get_async_client(hass, verify_ssl=False))
+    session = async_create_clientsession(hass, verify_ssl=False)
+    envoy = Envoy(host, session)
     coordinator = EnphaseRawDataUpdateCoordinator(hass, envoy, entry)
 
     # wait for one pyenphase data collection cycle to establish communication

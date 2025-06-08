@@ -14,8 +14,7 @@ from collections.abc import Mapping
 import logging
 from typing import Any
 
-from awesomeversion import AwesomeVersion
-from pyenphase import AUTH_TOKEN_MIN_VERSION, Envoy, EnvoyError
+from pyenphase import Envoy, EnvoyError
 import voluptuous as vol
 
 from homeassistant.config_entries import (
@@ -24,9 +23,9 @@ from homeassistant.config_entries import (
     ConfigFlow,
     ConfigFlowResult,
 )
-from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_USERNAME
+from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_TOKEN, CONF_USERNAME
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.httpx_client import get_async_client
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.typing import VolDictType
 
 from .const import DOMAIN, ENVOY_NAME, INVALID_AUTH_ERRORS, UNIQUE_ID
@@ -39,6 +38,14 @@ INSTALLER_AUTH_USERNAME = "installer"
 
 _LOGGER = logging.getLogger(__name__)
 
+AVOID_REFLECT_KEYS = {CONF_PASSWORD, CONF_TOKEN}
+
+
+def without_avoid_reflect_keys(dictionary: Mapping[str, Any]) -> dict[str, Any]:
+    """Return a dictionary without AVOID_REFLECT_KEYS."""
+    return {k: v for k, v in dictionary.items() if k not in AVOID_REFLECT_KEYS}
+
+
 
 async def validate_input(
     hass: HomeAssistant,
@@ -49,7 +56,7 @@ async def validate_input(
     description_placeholders: dict[str, str],
 ) -> Envoy:
     """Validate the user input allows us to connect."""
-    envoy = Envoy(host, get_async_client(hass, verify_ssl=False))
+    envoy = Envoy(host, async_get_clientsession(hass, verify_ssl=False))
     try:
         await envoy.setup()
         await envoy.authenticate(username=username, password=password)
@@ -140,11 +147,11 @@ class EnphaseExtConfigFlow(ConfigFlow, domain=DOMAIN):
                     title=name, data={CONF_HOST: host, CONF_NAME: name} | user_input
                 )
 
-        suggested_values: Mapping[str, Any] | None = user_input
         return self.async_show_form(
             step_id="user",
             data_schema=self.add_suggested_values_to_schema(
-                self._async_generate_schema(), suggested_values
+                self._async_generate_schema(),
+                without_avoid_reflect_keys(user_input or {}),
             ),
             description_placeholders=description_placeholders,
             errors=errors,
@@ -189,11 +196,11 @@ class EnphaseExtConfigFlow(ConfigFlow, domain=DOMAIN):
         }
         description_placeholders["serial"] = serial
 
-        suggested_values: Mapping[str, Any] = user_input or reconfigure_entry.data
         return self.async_show_form(
             step_id="reconfigure",
             data_schema=self.add_suggested_values_to_schema(
-                self._async_generate_schema(), suggested_values
+                self._async_generate_schema(),
+                without_avoid_reflect_keys(user_input or reconfigure_entry.data),
             ),
             description_placeholders=description_placeholders,
             errors=errors,
@@ -234,11 +241,11 @@ class EnphaseExtConfigFlow(ConfigFlow, domain=DOMAIN):
             CONF_HOST: reauth_entry.data[CONF_HOST],
         }
         description_placeholders["serial"] = serial
-        suggested_values: Mapping[str, Any] = user_input or reauth_entry.data
         return self.async_show_form(
             step_id="reauth_confirm",
             data_schema=self.add_suggested_values_to_schema(
-                self._async_generate_schema(), suggested_values
+                self._async_generate_schema(),
+                without_avoid_reflect_keys(user_input or reauth_entry.data),
             ),
             description_placeholders=description_placeholders,
             errors=errors,
