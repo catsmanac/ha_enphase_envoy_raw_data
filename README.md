@@ -20,11 +20,11 @@ Under the hood, this custom integration is a stripped down fork of the HA core i
 
 ## 2.x.x
 
-As of Home Assistant version 2025.? the Enphase Envoy integration switched from using httpx library to using the aiohttp library. Which is a breaking change for this custom integration. Starting with Home Assistant 2025.? you must update to 2.0.0 or newer version.
+As of Home Assistant version 2025.7, the Enphase Envoy integration switched from using httpx library to using the aiohttp library. This is a breaking change for this custom integration. Starting with Home Assistant 2025.7 you must update to 2.0.0 or newer version.
 
 ## 1.x.x
 
-First production versions. Only use with Home Assistant versions from 2025.3 to 2025.?-1.x.
+First production versions. Only use with Home Assistant versions from 2025.3 to 2025.6.3.
 
 # Installation and Configuration
 
