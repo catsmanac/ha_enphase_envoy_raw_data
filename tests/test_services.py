@@ -84,11 +84,7 @@ async def test_service_read_data(
     await setup_integration(hass, config_entry)
     assert config_entry.state is ConfigEntryState.LOADED
 
-    mock = Mock()
-    mock.status_code = 200
-    mock.content = b'{"tariff": {"currency": {"code": "EUR"}}}'
-    mock.headers = {"Hello": "World"}
-    mock_envoy.request.return_value = mock
+    mock_envoy.request.return_value.read.return_value=b'{"tariff": {"currency": {"code": "EUR"}}}'
 
     result = await hass.services.async_call(
         DOMAIN,
@@ -129,11 +125,7 @@ async def test_service_read_text_data(
     await setup_integration(hass, config_entry)
     assert config_entry.state is ConfigEntryState.LOADED
 
-    mock = Mock()
-    mock.status_code = 200
-    mock.content = b'Test Ok'
-    mock.headers = {"Hello": "World"}
-    mock_envoy.request.return_value = mock
+    mock_envoy.request.return_value.text.return_value='Test Ok'
 
     result = await hass.services.async_call(
         DOMAIN,
@@ -189,11 +181,8 @@ async def test_service_read_data_exceptions(
         )
 
     mock_envoy.request.side_effect = None
-    mock = Mock()
-    mock.status_code = 300
-    mock.content = b'{"tariff": {"currency": {"code": "EUR"}}}'
-    mock.headers = {"Hello": "World"}
-    mock_envoy.request.return_value = mock
+
+    mock_envoy.request.return_value.status=300
 
     with pytest.raises(
         HomeAssistantError,
@@ -235,11 +224,7 @@ async def test_service_send_data(
     await setup_integration(hass, config_entry)
     assert config_entry.state is ConfigEntryState.LOADED
 
-    mock = Mock()
-    mock.status_code = 200
-    mock.content = b'{"tariff": {"currency": {"code": "EUR"}}}'
-    mock.headers = {"Hello": "World"}
-    mock_envoy.request.return_value = mock
+    mock_envoy.request.return_value.read.return_value=b'{"tariff": {"currency": {"code": "EUR"}}}'
 
     result = await hass.services.async_call(
         DOMAIN,
@@ -302,11 +287,7 @@ async def test_service_send_data_exceptions(
     await setup_integration(hass, config_entry)
     assert config_entry.state is ConfigEntryState.LOADED
 
-    mock = Mock()
-    mock.status_code = 200
-    mock.content = b'{"tariff": {"currency": {"code": "EUR"}}}'
-    mock.headers = {"Hello": "World"}
-    mock_envoy.request.return_value = mock
+    mock_envoy.request.return_value.read.return_value=b'{"tariff": {"currency": {"code": "EUR"}}}'
 
     with pytest.raises(
         HomeAssistantError,
