@@ -7,10 +7,10 @@ This is a Home Assistant custom integration for [Enphase Envoy/IQ Gateway](https
 It provides 2 service actions to access Enphase IQ Gateway raw data:
 
 - read_data: GET request to the Envoy
-- send_data: PUT/POST request to the Envoy
+- send_data: PUT/POST/DELETE request to the Envoy
 
 > [!CAUTION]
-> ⚠️ Sending PUT/POST requests to the Envoy is at your own risk! Only use this service action if you fully understand the required data format, the effect on the Envoy/IQ Gateway and accept the risk of potential negative impact on the Envoy operation. Also be aware that each new firmware pushed to your Envoy/IQ Gateway may expose different behavior and PUT/POST request effects may suddenly change. ⚠️
+> ⚠️ Sending PUT/POST/DELETE requests to the Envoy is at your own risk! Only use this service action if you fully understand the required data format, the effect on the Envoy/IQ Gateway and accept the risk of potential negative impact on the Envoy operation. Also be aware that each new firmware pushed to your Envoy/IQ Gateway may expose different behavior and PUT/POST/DELETE request effects may suddenly change. ⚠️
 
 This integration provides no entities, for entities use the core [HA Core integration](https://www.home-assistant.io/integrations/enphase_envoy/) or another custom integration. It does **NOT** replace the core integration, both can be used at the same time. The intent is to provide additional specialized and more rarely used service actions which are not present in the core integration. It can run without the core integration, but the core integration would be needed to provide the [typical Envoy entities](https://www.home-assistant.io/integrations/enphase_envoy/#capabilities). 
 
@@ -220,15 +220,15 @@ mode: single
 ## Send data
 
 > [!CAUTION]
-> ⚠️ Sending PUT/POST requests is at your own risk! Only use this service action if you fully understand the required data format, the effect on the Envoy/IQ Gateway and accept the risk of potential negative impact on the Envoy operation. Also be aware that each new firmware pushed to your Envoy/IQ Gateway may expose different behavior and PUT/POST request effects may suddenly change. ⚠️
+> ⚠️ Sending PUT/POST/DELETE requests is at your own risk! Only use this service action if you fully understand the required data format, the effect on the Envoy/IQ Gateway and accept the risk of potential negative impact on the Envoy operation. Also be aware that each new firmware pushed to your Envoy/IQ Gateway may expose different behavior and PUT/POST/DELETE request effects may suddenly change. ⚠️
 
-This service action enables sending a PUT or POST request to an Envoy endpoint and receive the reply. 
+This service action enables sending a PUT, POST or DELETE request to an Envoy endpoint and receive the reply. 
 
 <details><summary>Example screenshots of Developer tools actions with Enphase_Envoy_raw_data send_data</summary>
 
 ![picture of Developer tools actions with Enphase_Envoy_raw_data](docs/Enphase_Envoy_raw_data_action_send_data.png "Developer tools actions with Enphase Envoy raw data")
 
-> ⚠️ Sending PUT/POST requests is at your own risk! Only use this service action if you fully understand the required data format, the effect on the Envoy/IQ Gateway and accept the risk of potential negative impact on the Envoy operation. Also be aware that each new firmware pushed to your Envoy/IQ Gateway may expose different behavior and PUT/POST request effects may suddenly change. ⚠️
+> ⚠️ Sending PUT/POST/DELETE requests is at your own risk! Only use this service action if you fully understand the required data format, the effect on the Envoy/IQ Gateway and accept the risk of potential negative impact on the Envoy operation. Also be aware that each new firmware pushed to your Envoy/IQ Gateway may expose different behavior and PUT/POST/DELETE request effects may suddenly change. ⚠️
 
 </details>
 
@@ -240,7 +240,7 @@ This service action enables sending a PUT or POST request to an Envoy endpoint a
 | Endpoint | no | The endpoint on the envoy to send data to. Must start with /. Must be an endpoint that accepts data.|
 | Data | no | JSON string or JSON object to send to Envoy. Format must match endpoint requirements. Requires your expertise.|
 | Risk acknowledgement | no | This should be set to true as confirmation you are accepting the risk of this operation. If not set, the action will return an error. |
-| Send method | no | Specify `PUT` or `POST`. Which is needed depends on the endpoint and data send. Requires your expertise.|
+| Send method | no | Specify `PUT`, `POST` or `DELETE`. Which is needed depends on the endpoint and data send. Requires your expertise.|
 | Test mode | no | When set, does not send request to envoy, but rather returns the data as JSON so result can be verified.  See [test mode](#test-mode).|
 
 ### Test mode
@@ -297,7 +297,7 @@ By now you should have realized that sending data may be a risky business. Safe-
 
 #### Response variable
 
-The response of PUT or POST request is returned as JSON with the specified endpoint as key.
+The response of PUT, POST or DELETE request is returned as JSON with the specified endpoint as key.
 
 
 ## Usage considerations
@@ -314,7 +314,7 @@ The response of PUT or POST request is returned as JSON with the specified endpo
 ```
 
         To use the data be aware to use `actual_value=result["xyz/abc"]`.
-- When using the send-data action service, while also using the core (or other custom) integration, consider triggering a data refresh in the core integration as a next step in the automation. This will assure that any changes in effect by the PUT or POST will be read back and are reflected in any core entities.
+- When using the send-data action service, while also using the core (or other custom) integration, consider triggering a data refresh in the core integration as a next step in the automation. This will assure that any changes in effect by the PUT, POST or DELETE will be read back and are reflected in any core entities.
 - To enable debug logging, either enable it on the integration or add below to your configuration.yaml
 ```yaml
     logger:

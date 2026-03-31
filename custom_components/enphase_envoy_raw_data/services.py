@@ -29,7 +29,7 @@ from homeassistant.core import (
 )
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 
-from .const import DOMAIN
+from .const import DOMAIN, INVALID_AUTH_ERRORS
 from .coordinator import EnphaseRawDataUpdateCoordinator
 
 ATTR_CONFIG_ENTRY_ID = "config_entry_id"
@@ -107,11 +107,22 @@ async def _envoy_request(
             "envoy_request, return data from cache %s", envoy_to_use.data.raw[endpoint]
         )
         return envoy_to_use.data.raw[endpoint]
-    try:
-        _LOGGER.debug("envoy_request, sending request to %s", endpoint)
-        response: ClientResponse = await envoy_to_use.request(endpoint, data, method)
-    except REQUESTERRORS as err:
-        _raise_ha_error(call, "envoy_error", envoy_to_use.host, err.args[0])
+    # handle auth changes due to envoy restart or token expiry
+    for tries in range(2):
+        try:
+            _LOGGER.debug("envoy_request, sending request to %s", endpoint)
+            response: ClientResponse = await envoy_to_use.request(
+                endpoint, data, method
+            )
+        except INVALID_AUTH_ERRORS as err:
+            if tries == 0:
+                # token likely expired or firmware changed, try to re-authenticate
+                await coordinator.try_reauthenticate()
+                continue
+            _raise_ha_error(call, "envoy_error", envoy_to_use.host, err.args[0])
+        except REQUESTERRORS as err:
+            _raise_ha_error(call, "envoy_error", envoy_to_use.host, err.args[0])
+        break
 
     if not (200 <= response.status < 300):
         _raise_ha_error(
@@ -175,7 +186,9 @@ async def setup_hass_services(hass: HomeAssistant) -> ServiceResponse:
         _LOGGER.debug("send_data_service endpoint: %s data: %s", endpoint, data)
         try:
             # make data dict or list
-            data_to_send = data if isinstance(data, (dict)) else orjson.loads(str(data))
+            data_to_send = (
+                data if isinstance(data, (dict, list)) else orjson.loads(str(data))
+            )
         except (orjson.JSONDecodeError, ValueError, TypeError) as err:
             _raise_validation(
                 "envoy_service_invalid_parameter",
@@ -195,7 +208,7 @@ async def setup_hass_services(hass: HomeAssistant) -> ServiceResponse:
                 call,
                 endpoint=endpoint,
                 method=call.data.get(ATTR_METHOD),
-                data=dict(data_to_send),
+                data=data_to_send,
             )
         except TypeError as err:
             _raise_validation(
@@ -215,7 +228,7 @@ async def setup_hass_services(hass: HomeAssistant) -> ServiceResponse:
                 vol.Required(ATTR_CONFIG_ENTRY_ID): str,
                 vol.Required(ATTR_ENDPOINT): str,
                 vol.Required(ATTR_DATA): vol.Any(str, object),
-                vol.Required(ATTR_METHOD): vol.In(["PUT", "POST"]),
+                vol.Required(ATTR_METHOD): vol.In(["PUT", "POST", "DELETE"]),
                 vol.Required(ATTR_RISK_ACKNOWLEDGED): bool,
                 vol.Required(ATTR_VALIDATE_MODE): bool,
             }

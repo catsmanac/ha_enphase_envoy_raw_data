@@ -3,7 +3,7 @@
 from unittest.mock import AsyncMock, patch, Mock
 
 from pyenphase.const import URL_TARIFF
-from pyenphase import EnvoyError
+from pyenphase import EnvoyError, EnvoyAuthenticationRequired
 import pytest
 from syrupy.assertion import SnapshotAssertion
 
@@ -165,6 +165,22 @@ async def test_service_read_data_exceptions(
         )
 
     mock_envoy.request.side_effect = EnvoyError("cannot_connect")
+    with pytest.raises(
+        HomeAssistantError,
+        match="Error communicating with Envoy API on",
+    ):
+        await hass.services.async_call(
+            DOMAIN,
+            "read_data",
+            {
+                ATTR_CONFIG_ENTRY_ID: config_entry.entry_id,
+                ATTR_ENDPOINT : "/tariff"
+            },
+            blocking=True,
+            return_response=True,
+        )
+
+    mock_envoy.request.side_effect = EnvoyAuthenticationRequired("Test failure")
     with pytest.raises(
         HomeAssistantError,
         match="Error communicating with Envoy API on",
