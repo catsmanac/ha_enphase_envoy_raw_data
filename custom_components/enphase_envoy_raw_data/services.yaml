@@ -44,6 +44,7 @@ send_data:
           options:
             - "POST"
             - "PUT"
+            - "DELETE"
     test_mode:
       required: true
       default: true

@@ -106,7 +106,7 @@
         },
         "method": {
           "name": "Send method",
-          "description": "Select send method to use. Either PUT or POST."
+          "description": "Select send method to use: PUT, POST or DELETE."
         },
         "risk_acknowledged": {
           "name": "Risk acknowledgement",

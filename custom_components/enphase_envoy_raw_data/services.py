@@ -175,7 +175,9 @@ async def setup_hass_services(hass: HomeAssistant) -> ServiceResponse:
         _LOGGER.debug("send_data_service endpoint: %s data: %s", endpoint, data)
         try:
             # make data dict or list
-            data_to_send = data if isinstance(data, (dict)) else orjson.loads(str(data))
+            data_to_send = (
+                data if isinstance(data, (dict, list)) else orjson.loads(str(data))
+            )
         except (orjson.JSONDecodeError, ValueError, TypeError) as err:
             _raise_validation(
                 "envoy_service_invalid_parameter",
@@ -195,7 +197,7 @@ async def setup_hass_services(hass: HomeAssistant) -> ServiceResponse:
                 call,
                 endpoint=endpoint,
                 method=call.data.get(ATTR_METHOD),
-                data=dict(data_to_send),
+                data=data_to_send,
             )
         except TypeError as err:
             _raise_validation(
@@ -215,7 +217,7 @@ async def setup_hass_services(hass: HomeAssistant) -> ServiceResponse:
                 vol.Required(ATTR_CONFIG_ENTRY_ID): str,
                 vol.Required(ATTR_ENDPOINT): str,
                 vol.Required(ATTR_DATA): vol.Any(str, object),
-                vol.Required(ATTR_METHOD): vol.In(["PUT", "POST"]),
+                vol.Required(ATTR_METHOD): vol.In(["PUT", "POST", "DELETE"]),
                 vol.Required(ATTR_RISK_ACKNOWLEDGED): bool,
                 vol.Required(ATTR_VALIDATE_MODE): bool,
             }
