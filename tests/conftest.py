@@ -25,11 +25,14 @@ from pyenphase.models.meters import EnvoyMeterData
 from pyenphase.models.tariff import EnvoyStorageSettings, EnvoyTariff
 import pytest
 
-from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_USERNAME
+from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_USERNAME, CONF_TOKEN
 from homeassistant.core import HomeAssistant
 
 from custom_components.enphase_envoy_raw_data.const import DOMAIN, UNIQUE_ID
-from pytest_homeassistant_custom_component.common import MockConfigEntry, load_json_object_fixture, json_loads_object, load_fixture
+from pytest_homeassistant_custom_component.common import MockConfigEntry, load_json_object_fixture
+from custom_components.enphase_envoy_raw_data.const import CONF_MANUAL_TOKEN
+
+from . import envoy_token
 
 @pytest.fixture(autouse=True)
 def auto_enable_custom_integrations(enable_custom_integrations):
@@ -48,15 +51,50 @@ def mock_setup_entry() -> Generator[AsyncMock]:
 
 @pytest.fixture(name="config_entry")
 def config_entry_fixture(
-    hass: HomeAssistant, config: dict[str, str]
+    hass: HomeAssistant, 
+    config: dict[str, str],
+    request: pytest.FixtureRequest,
 ) -> MockConfigEntry:
     """Define a config entry fixture."""
+    token_mode: str = "none"
+    token_life: int = 365
+    data: dict[str,Any]={}
+    if hasattr(request, "param"):
+        if isinstance(request.param, list):
+            token_mode = request.param[0]
+            if len(request.param) > 1:
+                token_life = request.param[1]
+        else:
+            token_mode = request.param
+    if token_mode == "none":
+        data = config
+    elif token_mode == "auto":
+        # config contains token from automatic retrieval
+        data = {
+            CONF_HOST: "1.1.1.1",
+            CONF_NAME: "Envoy 1234",
+            CONF_USERNAME: "test-username",
+            CONF_PASSWORD: "test-password",
+            CONF_TOKEN: envoy_token(token_life),
+            CONF_MANUAL_TOKEN: False,
+        }
+    elif token_mode == "manual":
+        # config contains token from manual entry
+        data = {
+            CONF_HOST: "1.1.1.1",
+            CONF_NAME: "Envoy 1234",
+            CONF_USERNAME: "",
+            CONF_PASSWORD: "",
+            CONF_TOKEN: envoy_token(token_life),
+            CONF_MANUAL_TOKEN: True,
+        }
+
     return MockConfigEntry(
         domain=DOMAIN,
         entry_id="45a36e55aaddb2007c5f6602e0c38e72",
         title="Envoy 1234",
         unique_id=f"{UNIQUE_ID}1234",
-        data=config,
+        data=data,
     )
 
 

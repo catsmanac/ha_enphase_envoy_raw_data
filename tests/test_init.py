@@ -11,7 +11,7 @@ from pyenphase.auth import EnvoyLegacyAuth
 import pytest
 import respx
 
-from custom_components.enphase_envoy_raw_data.const import DOMAIN
+from custom_components.enphase_envoy_raw_data.const import DOMAIN, ENVOY_NAME, UNIQUE_ID
 
 from custom_components.enphase_envoy_raw_data.coordinator import (
     FIRMWARE_REFRESH_INTERVAL,
@@ -121,6 +121,89 @@ async def test_expired_token_in_config(
     await setup_integration(hass, entry)
 
     assert entry.runtime_data.envoy == mock_envoy
+
+@pytest.mark.parametrize(
+    ("config_entry"),
+    [("manual")],
+    indirect=True,
+)
+@respx.mock
+async def test_not_expired_token_with_manual_token(
+    hass: HomeAssistant,
+    mock_envoy: AsyncMock,
+    config_entry: MockConfigEntry,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Test coordinator with 365 day token in config and manual token option on."""
+    mock_envoy.auth = EnvoyTokenAuth(
+        "127.0.0.1",
+        token=config_entry.data[CONF_TOKEN],
+        envoy_serial="1234",
+    )
+    caplog.set_level(logging.DEBUG)
+
+    await setup_integration(hass, config_entry)
+
+    assert (
+        f"Envoy 1234: 364 days remaining on token, fresh=True, manual token mode=True"
+        in caplog.text
+    )
+
+
+@pytest.mark.parametrize(
+    ("config_entry"),
+    [["manual", 25]],  # expires in 25 days
+    indirect=True,
+)
+@respx.mock
+async def test_almost_expired_token_with_manual_token(
+    hass: HomeAssistant,
+    mock_envoy: AsyncMock,
+    config_entry: MockConfigEntry,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Test coordinator with token within warning time in config and manual token option on."""
+    caplog.set_level(logging.DEBUG)
+
+    # Make sure to mock pyenphase.auth.EnvoyTokenAuth._obtain_token
+    # when specifying username and password in EnvoyTokenauth
+    mock_envoy.auth = EnvoyTokenAuth(
+        "127.0.0.1",
+        token=config_entry.data[CONF_TOKEN],
+        envoy_serial="1234",
+    )
+    await setup_integration(
+        hass,
+        config_entry,
+    )
+    assert (
+        "Envoy 1234: 24 days remaining on token, fresh=False, manual token mode=True"
+        in caplog.text
+    )
+
+
+@pytest.mark.parametrize(
+    ("config_entry"),
+    [["manual", -1]],  # expired yesterday
+    indirect=True,
+)
+@respx.mock
+async def test_expired_token_with_manual_token(
+    hass: HomeAssistant,
+    mock_envoy: AsyncMock,
+    config_entry: MockConfigEntry,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Test coordinator with expired token in config and manual token option on."""
+
+    # manual token mode has no option to use username/pw to refresh token
+    mock_envoy.authenticate.side_effect = EnvoyAuthenticationError(
+        "fail authentication"
+    )
+    # setup should fail with expired token
+    await setup_integration(
+        hass, config_entry, expected_state=ConfigEntryState.SETUP_ERROR
+    )
 
 
 async def test_coordinator_update_error(

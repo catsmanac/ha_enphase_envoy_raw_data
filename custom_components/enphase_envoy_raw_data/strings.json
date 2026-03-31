@@ -6,12 +6,16 @@
         "data": {
           "host": "Host",
           "username": "Username",
-          "password": "Password"
+          "password": "Password",
+          "token": "Envoy access token",
+          "use_manual_token": "I want to enter the Envoy access token manually"
         },
         "data_description": {
           "host": "The hostname or IP address of your Enphase Envoy gateway.",
           "username": "Installer or Enphase Cloud username",
-          "password": "Blank or Enphase Cloud password"
+          "password": "Blank or Enphase Cloud password",
+          "token": "Go to the [Enphase login]({enphase_url}) to get a new token. Current token lifetime: {token_life} days.",
+          "use_manual_token": "Check or uncheck this option and select **Submit** if you want to enable or disable entering a token manually. If your Enphase Cloud account has multi-factor authentication enabled, use this to add or update your token."
         }
       },
       "reconfigure": {
@@ -19,32 +23,48 @@
         "data": {
           "host": "Host",
           "username": "Username",
-          "password": "Password"
+          "password": "Password",
+          "token": "Envoy access token",
+          "use_manual_token": "I want to enter the Envoy access token manually"
         },
         "data_description": {
           "host": "The hostname or IP address of your Enphase Envoy gateway.",
           "username": "Installer or Enphase Cloud username",
-          "password": "Blank or Enphase Cloud password"
+          "password": "Blank or Enphase Cloud password",
+          "token": "Go to the [Enphase login]({enphase_url}) to get a new token. Current token lifetime: {token_life} days.",
+          "use_manual_token": "Check or uncheck this option and select **Submit** if you want to enable or disable entering a token manually. If your Enphase Cloud account has multi-factor authentication enabled, use this to add or update your token."
        }
       },
       "reauth_confirm": {
         "description": "For firmware version 7.0 and later, enter the Enphase cloud credentials, for older models, enter username `installer` without a password.",
         "data": {
           "username": "Username",
-          "password": "Password"
+          "password": "Password",
+          "token": "Go to the [Enphase login]({enphase_url}) to get a new token. Current token lifetime: {token_life} days.",
+          "use_manual_token": "Check or uncheck this option and select **Submit** if you want to enable or disable entering a token manually. If your Enphase Cloud account has multi-factor authentication enabled, use this to add or update your token."
         },
         "data_description": {
           "username": "Installer or Enphase Cloud username",
-          "password": "Blank or Enphase Cloud password"
+          "password": "Blank or Enphase Cloud password",
+          "token": "Envoy access token",
+          "use_manual_token": "I want to enter the Envoy access token manually"
         }
       }
     },
     "error": {
-      "cannot_connect": "Failed to connect: {reason}"
+      "cannot_connect": "Failed to connect: {reason}",
+      "invalid_auth": "Invalid authentication: {reason}",
+      "unknown": "[%key:common::config_flow::error::unknown%]"
     },
     "abort": {
-      "single_instance_allowed": "Service is already configured. Only a single configuration possible."
-    }
+      "single_instance_allowed": "Service is already configured. Only a single configuration possible.",
+      "already_configured": "Device is already configured",
+      "reauth_successful": "Re-authentication was successful",
+      "reconfigure_successful": "Reconfiguration was successful",
+      "unique_id_mismatch": "The serial number of the device does not match the previous serial number"
+
+    },
+    "flow_title": "{serial} ({host})"
   },
   "exceptions": {
     "unexpected_device": {
