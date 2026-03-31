@@ -273,6 +273,11 @@ class EnphaseRawDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         raise RuntimeError("Unreachable code in _async_update_data")  # pragma: no cover
 
+    async def try_reauthenticate(self) -> None:
+        """Try re-authentication when only using requests and 401 is returned."""
+        self._setup_complete = False
+        await self._async_update_data()
+
     @callback
     def async_cancel_token_refresh(self) -> None:
         """Cancel token refresh."""
