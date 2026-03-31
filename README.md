@@ -65,12 +65,18 @@ When first adding the integration or when adding another Envoy instance, enter b
 | Host | The name or IP address of the Envoy to configure.
 | Username | For firmware version 7.0 and later, enter your Enlighten cloud username. <br> For firmware before 7.0, enter username *installer* without a password. |
 | Password | For firmware version 7.0 and later, enter your Enlighten cloud password <br> For firmware before 7.0, with username *installer*, leave blank. |
-
-The Enlighten cloud username and password for firmware version 7.0 and later will be used to obtain a 1-year-valid token from the enphase web-site when first configured or 1 month before expiry.
+| want to enter token manually | If you wwant to enter a token manually, check this option and select **Submit** to switch to the token entry form. Use when your Enphase account uses multi-factor authentication or if you don't want to store username/password in the configuration data.|
+| token | Enter an Envoy access token when in manual token entry mode. Use the link below the field to open the Enphase token portal.|
+The Enlighten cloud username and password for firmware version 7.0 and later will be used to obtain a 1-year-valid token from the enphase web-site when first configured or 1 month before expiry. When in manual token mode you will need to refresh the token manually. A notification will show 1 month before expiry.
 
 <details><summary>Example screenshots</summary>
 
 ![picture of configuring envoy](docs/Enphase_Envoy_raw_data_add_envoy.png "Configure Envoy with Enphase Envoy raw data custom integration")
+
+To switch to manual token entry, enter first the host ip address and then check this option and select **Submit**.
+
+![picture of configuring envoy with manual token entry](docs/Enphase_Envoy_raw_data_add_envoy_manual_token.png "Configure Envoy with Enphase Envoy raw data custom integration with manual token entry")
+
 
 Upon successful configuration, the integration can be found in the Home Assistant integrations dashboard.
 

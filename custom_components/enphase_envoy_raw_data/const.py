@@ -15,6 +15,8 @@ from pyenphase import EnvoyAuthenticationError, EnvoyAuthenticationRequired
 DOMAIN = "enphase_envoy_raw_data"
 
 CONF_UPDATER = "updater"
+ACCESS_TOKEN_LOGIN_URL = "https://entrez.enphaseenergy.com"
+CONF_MANUAL_TOKEN = "use_manual_token"
 
 NAME = "Enphase Envoy Raw Data"
 
