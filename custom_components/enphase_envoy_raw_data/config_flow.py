@@ -134,12 +134,14 @@ class EnphaseExtConfigFlow(ConfigFlow, domain=DOMAIN):
         if self.source != SOURCE_REAUTH:
             schema[vol.Required(CONF_HOST)] = str
 
+        default_username = ""
+
         if self.manual_token:
             # in manual token entry mode show token input field
             schema[vol.Optional(CONF_TOKEN, default="")] = str
         else:
             # in automatic token mode show username and password inputs
-            schema[vol.Optional(CONF_USERNAME, default=self.username)] = str
+            schema[vol.Optional(CONF_USERNAME, default=self.username or default_username)] = str
             schema[vol.Optional(CONF_PASSWORD, default="")] = str
 
         # option to switch between automatic and manual token entry modes

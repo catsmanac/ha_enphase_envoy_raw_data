@@ -402,8 +402,6 @@ async def test_form_configure_manual_token(
         result["flow_id"],
         {
             CONF_HOST: "1.1.1.1",
-            CONF_USERNAME: "",
-            CONF_PASSWORD: "",
             CONF_MANUAL_TOKEN: True,
         },
     )
@@ -464,8 +462,6 @@ async def test_form_switch_between_token_modes(
         result["flow_id"],
         {
             CONF_HOST: "1.1.1.1",
-            CONF_USERNAME: "",
-            CONF_PASSWORD: "",
             CONF_MANUAL_TOKEN: True,
         },
     )
@@ -527,8 +523,6 @@ async def test_reauth_switch_to_manual_token(
     result2 = await hass.config_entries.flow.async_configure(
         result["flow_id"],
         {
-            CONF_USERNAME: "",
-            CONF_PASSWORD: "",
             CONF_MANUAL_TOKEN: True,
         },
     )
@@ -629,8 +623,6 @@ async def test_reconfigure_switch_to_manual_token(
         result["flow_id"],
         {
             CONF_HOST: "1.1.1.1",
-            CONF_USERNAME: "",
-            CONF_PASSWORD: "",
             CONF_MANUAL_TOKEN: True
         },
     )
