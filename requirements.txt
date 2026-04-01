@@ -1,0 +1,6 @@
+pytest-homeassistant-custom-component
+pyenphase
+colorlog==6.10.1
+homeassistant==2026.3.2
+pip>=21.3.1
+ruff==0.15.7
