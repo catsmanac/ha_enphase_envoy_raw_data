@@ -1,22 +1,12 @@
 """Test Enphase Envoy runtime."""
 
-from datetime import timedelta
 import logging
+from datetime import timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from freezegun.api import FrozenDateTimeFactory
-from jwt import encode
-from pyenphase import EnvoyAuthenticationError, EnvoyError, EnvoyTokenAuth
-from pyenphase.auth import EnvoyLegacyAuth
 import pytest
 import respx
-
-from custom_components.enphase_envoy_raw_data.const import DOMAIN, ENVOY_NAME, UNIQUE_ID
-
-from custom_components.enphase_envoy_raw_data.coordinator import (
-    FIRMWARE_REFRESH_INTERVAL,
-    SCAN_INTERVAL,
-)
+from freezegun.api import FrozenDateTimeFactory  # noqa: TC002
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import (
     CONF_HOST,
@@ -24,18 +14,24 @@ from homeassistant.const import (
     CONF_PASSWORD,
     CONF_TOKEN,
     CONF_USERNAME,
-    STATE_UNAVAILABLE,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant  # noqa: TC002
 from homeassistant.exceptions import ConfigEntryAuthFailed
-from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.update_coordinator import UpdateFailed
-from homeassistant.setup import async_setup_component
+from jwt import encode
+from pyenphase import EnvoyAuthenticationError, EnvoyError, EnvoyTokenAuth
+from pyenphase.auth import EnvoyLegacyAuth
+from pytest_homeassistant_custom_component.common import (
+    MockConfigEntry,
+    async_fire_time_changed,
+)
+
+from custom_components.enphase_envoy_raw_data.const import DOMAIN
+from custom_components.enphase_envoy_raw_data.coordinator import (
+    FIRMWARE_REFRESH_INTERVAL,
+)
 
 from . import setup_integration
-
-from pytest_homeassistant_custom_component.common import MockConfigEntry, async_fire_time_changed
-from pytest_homeassistant_custom_component.typing import WebSocketGenerator
 
 
 async def test_with_pre_v7_firmware(
@@ -50,6 +46,7 @@ async def test_with_pre_v7_firmware(
     )
     await setup_integration(hass, config_entry)
     assert config_entry.runtime_data.envoy == mock_envoy
+
 
 @pytest.mark.freeze_time("2024-07-23 00:00:00+00:00")
 async def test_token_in_config_file(
@@ -122,6 +119,7 @@ async def test_expired_token_in_config(
 
     assert entry.runtime_data.envoy == mock_envoy
 
+
 @pytest.mark.parametrize(
     ("config_entry"),
     [("manual")],
@@ -145,7 +143,7 @@ async def test_not_expired_token_with_manual_token(
     await setup_integration(hass, config_entry)
 
     assert (
-        f"Envoy 1234: 364 days remaining on token, fresh=True, manual token mode=True"
+        "Envoy 1234: 364 days remaining on token, fresh=True, manual token mode=True"
         in caplog.text
     )
 
@@ -162,7 +160,7 @@ async def test_almost_expired_token_with_manual_token(
     config_entry: MockConfigEntry,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-    """Test coordinator with token within warning time in config and manual token option on."""
+    """Test coordinator with manual token option within warning time in config."""
     caplog.set_level(logging.DEBUG)
 
     # Make sure to mock pyenphase.auth.EnvoyTokenAuth._obtain_token
@@ -195,7 +193,6 @@ async def test_expired_token_with_manual_token(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """Test coordinator with expired token in config and manual token option on."""
-
     # manual token mode has no option to use username/pw to refresh token
     mock_envoy.authenticate.side_effect = EnvoyAuthenticationError(
         "fail authentication"
@@ -222,7 +219,7 @@ async def test_coordinator_update_error(
         UpdateFailed,
         match="Error communicating with Envoy API on",
     ):
-        await coordinator._async_update_data()
+        await coordinator._async_update_data()  # noqa: SLF001
 
 
 async def test_coordinator_update_authentication_error(
@@ -240,7 +237,7 @@ async def test_coordinator_update_authentication_error(
         ConfigEntryAuthFailed,
         match="Envoy authentication failure on",
     ):
-        await coordinator._async_update_data()
+        await coordinator._async_update_data()  # noqa: SLF001
 
 
 @pytest.mark.freeze_time("2024-07-23 00:00:00+00:00")
@@ -320,6 +317,7 @@ async def test_config_different_unique_id(
     )
     await setup_integration(hass, entry, expected_state=ConfigEntryState.SETUP_RETRY)
 
+
 async def test_option_change_reload(
     hass: HomeAssistant,
     config_entry: MockConfigEntry,
@@ -355,7 +353,8 @@ async def test_option_change_reload(
         "Test_option": False,
     }
 
-def mock_envoy_setup(mock_envoy: AsyncMock):
+
+def mock_envoy_setup(mock_envoy: AsyncMock) -> None:
     """Mock envoy.setup."""
     mock_envoy.firmware = "9.9.9999"
 
@@ -399,14 +398,15 @@ async def test_coordinator_firmware_refresh(
         await hass.async_block_till_done(wait_background_tasks=True)
 
         assert (
-            "Envoy firmware changed from: 7.6.175 to: 9.9.9999, reloading config entry Envoy 1234"
+            "Envoy firmware changed from: 7.6.175 to: 9.9.9999, reloading config entry Envoy 1234"  # noqa: E501
             in caplog.text
         )
         envoy = config_entry.runtime_data.envoy
         assert envoy.firmware == "9.9.9999"
-    
-    device_info =  config_entry.runtime_data._get_device_info()
+
+    device_info = config_entry.runtime_data._get_device_info()  # noqa: SLF001
     assert device_info["sw_version"] == "9.9.9999"
+
 
 @respx.mock
 async def test_coordinator_firmware_change_detection(
@@ -421,7 +421,7 @@ async def test_coordinator_firmware_change_detection(
     coordinator = config_entry.runtime_data
 
     mock_envoy.setup.reset_mock()
-    await coordinator._async_update_data()
+    await coordinator._async_update_data()  # noqa: SLF001
     await hass.async_block_till_done(wait_background_tasks=True)
 
     envoy = config_entry.runtime_data.envoy
@@ -433,17 +433,17 @@ async def test_coordinator_firmware_change_detection(
         "custom_components.enphase_envoy_raw_data.Envoy.setup",
         MagicMock(return_value=mock_envoy_setup(mock_envoy)),
     ):
-        await coordinator._async_update_data()
+        await coordinator._async_update_data()  # noqa: SLF001
         await hass.async_block_till_done(wait_background_tasks=True)
         mock_envoy.setup.assert_called_once_with()
         assert (
-            "Envoy firmware changed from: 7.6.175 to: 9.9.9999, reloading enphase envoy raw data integration"
+            "Envoy firmware changed from: 7.6.175 to: 9.9.9999, reloading enphase envoy raw data integration"  # noqa: E501
             in caplog.text
         )
         envoy = config_entry.runtime_data.envoy
         assert envoy.firmware == "9.9.9999"
-    
-    device_info =  config_entry.runtime_data._get_device_info()
+
+    device_info = config_entry.runtime_data._get_device_info()  # noqa: SLF001
     assert device_info["sw_version"] == "9.9.9999"
 
 

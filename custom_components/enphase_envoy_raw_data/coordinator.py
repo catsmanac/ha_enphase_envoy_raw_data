@@ -1,11 +1,13 @@
-"""Data Coordinator for Enphase Envoy Raw Data Support.
+"""
+Data Coordinator for Enphase Envoy Raw Data Support.
 
 This custom integration registers an enphase_envoy_raw_data integration
 that only provides a read_data(endpoint) and send_data(endpoint,data)
 action/service. No entities are provided.
 
-!!! SENDING DATA TO AN ENVOY ENDPOINT HAS RISK FOR PROPER OPERATION OF THE ENVOY.
-DOING SO IS AT YOUR OWN RISK AND SHOULD ONLY BE DONE FULLY UNDERSTANDING ANY EFFECT OF IT !!!
+!!! SENDING DATA TO AN ENVOY ENDPOINT HAS RISK FOR PROPER OPERATION
+OF THE ENVOY. DOING SO IS AT YOUR OWN RISK AND SHOULD ONLY BE DONE
+FULLY UNDERSTANDING ANY EFFECT OF IT !!!
 
 This integration does not replace the core integration. It can be used next to it
 """
@@ -14,11 +16,9 @@ from __future__ import annotations
 
 import contextlib
 import datetime
-from datetime import timedelta
 import logging
+from datetime import timedelta
 from typing import Any
-
-from pyenphase import Envoy, EnvoyError, EnvoyTokenAuth
 
 from homeassistant.components import persistent_notification
 from homeassistant.config_entries import ConfigEntry
@@ -30,8 +30,9 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
+from pyenphase import Envoy, EnvoyError, EnvoyTokenAuth
 
-from .const import DOMAIN, ENVOY_NAME, INVALID_AUTH_ERRORS, CONF_MANUAL_TOKEN
+from .const import CONF_MANUAL_TOKEN, DOMAIN, ENVOY_NAME, INVALID_AUTH_ERRORS
 
 SCAN_INTERVAL = timedelta(seconds=60)
 
@@ -47,7 +48,8 @@ type EnphaseRawDataConfigEntry = ConfigEntry[EnphaseRawDataUpdateCoordinator]
 
 
 class EnphaseRawDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
-    """DataUpdateCoordinator to gather data from any envoy.
+    """
+    DataUpdateCoordinator to gather data from any envoy.
 
     The coordinator will only be used as API to the Envoy.
     as it stored the envoy setup, no periodic updates will be performed.
@@ -85,16 +87,16 @@ class EnphaseRawDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     def _track_token_lifetime(self) -> bool:
         """Update tokenlifetime and return if still fresh."""
-        assert isinstance(self.envoy.auth, EnvoyTokenAuth)
+        assert isinstance(self.envoy.auth, EnvoyTokenAuth)  # noqa: S101
         self.token_lifetime = int(
             (self.envoy.auth.expire_timestamp - dt_util.utcnow().timestamp()) / 86400
         )
         return self.token_lifetime > STALE_TOKEN_THRESHOLD
 
     @callback
-    def _async_refresh_token_if_needed(self, now: datetime.datetime) -> None:
+    def _async_refresh_token_if_needed(self, now: datetime.datetime) -> None:  # noqa: ARG002
         """Proactively refresh token if its stale in case cloud services goes down."""
-        assert isinstance(self.envoy.auth, EnvoyTokenAuth)
+        assert isinstance(self.envoy.auth, EnvoyTokenAuth)  # noqa: S101
         fresh = self._track_token_lifetime()
         name = self.name
         _LOGGER.debug(
@@ -110,10 +112,12 @@ class EnphaseRawDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     self._async_try_refresh_token(), f"{name} token refresh"
                 )
                 return
-            # create persistent notification to warn user that manual token needs refresh
+            # create persistent notification to warn that manual token needs refresh
             persistent_notification.async_create(
                 self.hass,
-                f"The envoy token is expiring in {self.token_lifetime} days, to refresh the token, use reconfigure for {self.name} in the Enphase envoy integration.",
+                f"The envoy token is expiring in {self.token_lifetime} days, \
+                    to refresh the token, use reconfigure for {self.name} in \
+                    the Enphase envoy integration.",
                 title=f"Envoy token expiring in {self.token_lifetime} days",
                 notification_id=f"{NOTIFICATION_ID}_{self.envoy_serial_number}",
             )
@@ -126,10 +130,9 @@ class EnphaseRawDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             self.hass, f"{NOTIFICATION_ID}_{self.envoy_serial_number}"
         )
 
-
     async def _async_try_refresh_token(self) -> None:
         """Try to refresh token."""
-        assert isinstance(self.envoy.auth, EnvoyTokenAuth)
+        assert isinstance(self.envoy.auth, EnvoyTokenAuth)  # noqa: S101
         _LOGGER.debug("%s: Trying to refresh token", self.name)
         try:
             await self.envoy.auth.refresh()
@@ -143,7 +146,7 @@ class EnphaseRawDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._async_update_saved_token()
 
     @callback
-    def _async_refresh_firmware(self, now: datetime.datetime) -> None:
+    def _async_refresh_firmware(self, now: datetime.datetime) -> None:  # noqa: ARG002
         """Proactively check for firmware changes in Envoy."""
         self.hass.async_create_background_task(
             self._async_try_refresh_firmware(), "{name} firmware refresh"
@@ -175,7 +178,7 @@ class EnphaseRawDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     @callback
     def _async_mark_setup_complete(self) -> None:
-        """Mark setup as complete and setup firmware checks and token refresh if needed."""
+        """Mark setup as complete, setup firmware checks and token refresh if needed."""
         self._setup_complete = True
         self.async_cancel_firmware_refresh()
         self._cancel_firmware_refresh = async_track_time_interval(
@@ -200,7 +203,7 @@ class EnphaseRawDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         device_registry = dr.async_get(self.hass)
         device_registry.async_get_or_create(
             config_entry_id=self.config_entry.entry_id,
-            identifiers={(DOMAIN, self.envoy.serial_number)},
+            identifiers={(DOMAIN, str(self.envoy.serial_number))},
             manufacturer="Enphase",
             model=self.envoy.envoy_model,
             name=ENVOY_NAME,
@@ -213,7 +216,7 @@ class EnphaseRawDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         """Set up and authenticate with the envoy."""
         envoy = self.envoy
         await envoy.setup()
-        assert envoy.serial_number is not None
+        assert envoy.serial_number is not None  # noqa: S101
         self.envoy_serial_number = envoy.serial_number
         if token := self.config_entry.data.get(CONF_TOKEN):
             with contextlib.suppress(*INVALID_AUTH_ERRORS):
@@ -292,7 +295,7 @@ class EnphaseRawDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 new_firmware := envoy.firmware
             ):
                 _LOGGER.warning(
-                    "Envoy firmware changed from: %s to: %s, reloading enphase envoy raw data integration",
+                    "Envoy firmware changed from: %s to: %s, reloading enphase envoy raw data integration",  # noqa: E501
                     current_firmware,
                     new_firmware,
                 )
@@ -305,7 +308,9 @@ class EnphaseRawDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             _LOGGER.debug("Envoy data: %s", envoy_data)
             return envoy_data.raw
 
-        raise RuntimeError("Unreachable code in _async_update_data")  # pragma: no cover
+        raise RuntimeError(  # noqa: TRY003
+            "Unreachable code in _async_update_data"  # noqa: EM101
+        )  # pragma: no cover
 
     async def try_reauthenticate(self) -> None:
         """Try re-authentication when only using requests and 401 is returned."""
@@ -328,7 +333,7 @@ class EnphaseRawDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     def _get_device_info(self) -> DeviceInfo:
         return DeviceInfo(
-            identifiers={(DOMAIN, self.envoy.serial_number)},
+            identifiers={(DOMAIN, str(self.envoy.serial_number))},
             manufacturer="Enphase",
             model=self.envoy.envoy_model,
             name=ENVOY_NAME,

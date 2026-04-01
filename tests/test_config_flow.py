@@ -1,25 +1,38 @@
 """Test the Enphase Envoy config flow."""
 
-from ipaddress import ip_address
 import logging
-from unittest.mock import AsyncMock
+from typing import TYPE_CHECKING
 
-from pyenphase import EnvoyAuthenticationError, EnvoyError, EnvoyTokenAuth
 import pytest
-
-from custom_components.enphase_envoy_raw_data.const import DOMAIN, ENVOY_NAME, UNIQUE_ID, CONF_MANUAL_TOKEN
-
 from homeassistant.config_entries import SOURCE_USER
-from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_USERNAME, CONF_TOKEN
-from homeassistant.core import HomeAssistant
+from homeassistant.const import (
+    CONF_HOST,
+    CONF_NAME,
+    CONF_PASSWORD,
+    CONF_TOKEN,
+    CONF_USERNAME,
+)
 from homeassistant.data_entry_flow import FlowResultType
-
-from . import setup_integration, envoy_token
-
+from pyenphase import EnvoyAuthenticationError, EnvoyError, EnvoyTokenAuth
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.enphase_envoy_raw_data.const import (
+    CONF_MANUAL_TOKEN,
+    DOMAIN,
+    ENVOY_NAME,
+    UNIQUE_ID,
+)
+
+from . import envoy_token, setup_integration
+
+if TYPE_CHECKING:
+    from unittest.mock import AsyncMock
+
+    from homeassistant.core import HomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
+
+# pyright: reportTypedDictNotRequiredAccess=false
 
 
 async def test_form(
@@ -31,6 +44,8 @@ async def test_form(
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": SOURCE_USER}
     )
+    assert "type" in result
+    assert "errors" in result
     assert result["type"] is FlowResultType.FORM
     assert result["errors"] == {}
 
@@ -135,6 +150,7 @@ async def test_form_errors(
         },
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
+
 
 async def test_reauth(
     hass: HomeAssistant,
@@ -331,7 +347,7 @@ async def test_reconfigure_change_ip_to_existing(
     mock_setup_entry: AsyncMock,
     mock_envoy: AsyncMock,
 ) -> None:
-    """Test reconfiguration to existing entry with same ip does not harm existing one."""
+    """Test reconfigure to existing entry with same ip does not harm existing one."""
     await setup_integration(hass, config_entry)
     other_entry = MockConfigEntry(
         domain=DOMAIN,
@@ -444,6 +460,7 @@ async def test_form_configure_manual_token(
         CONF_TOKEN: token,
     }
 
+
 async def test_form_switch_between_token_modes(
     hass: HomeAssistant,
     mock_setup_entry: AsyncMock,
@@ -505,6 +522,7 @@ async def test_form_switch_between_token_modes(
         # in auto mode the verification will retrieve token from envoy
         CONF_TOKEN: mock_envoy.auth.token,
     }
+
 
 async def test_reauth_switch_to_manual_token(
     hass: HomeAssistant,
@@ -600,6 +618,7 @@ async def test_reauth_manual_token(
     assert config_entry.data[CONF_MANUAL_TOKEN]
     assert config_entry.data[CONF_TOKEN] == next_token
 
+
 @pytest.mark.parametrize(
     ("config_entry"),
     [("auto")],
@@ -621,10 +640,7 @@ async def test_reconfigure_switch_to_manual_token(
     # user input to switch to manual token entry
     result2 = await hass.config_entries.flow.async_configure(
         result["flow_id"],
-        {
-            CONF_HOST: "1.1.1.1",
-            CONF_MANUAL_TOKEN: True
-        },
+        {CONF_HOST: "1.1.1.1", CONF_MANUAL_TOKEN: True},
     )
     await hass.async_block_till_done()
     # no config update, only form mode switch
@@ -649,6 +665,7 @@ async def test_reconfigure_switch_to_manual_token(
     assert config_entry.data[CONF_PASSWORD] == ""
     assert config_entry.data[CONF_TOKEN] == token
     assert config_entry.data[CONF_MANUAL_TOKEN]
+
 
 @pytest.mark.parametrize(
     ("config_entry"),
@@ -700,7 +717,6 @@ async def test_reconfigure_manual_token(
     assert config_entry.data[CONF_PASSWORD] == ""
     assert config_entry.data[CONF_TOKEN] == next_token
     assert config_entry.data[CONF_MANUAL_TOKEN]
-
 
 
 @pytest.mark.parametrize(

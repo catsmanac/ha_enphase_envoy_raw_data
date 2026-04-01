@@ -1,10 +1,14 @@
 """Test the Enphase Envoy services."""
 
-from unittest.mock import AsyncMock, patch, Mock
+from unittest.mock import AsyncMock, patch
 
-from pyenphase.const import URL_TARIFF
-from pyenphase import EnvoyError, EnvoyAuthenticationRequired
 import pytest
+from homeassistant.config_entries import ConfigEntryState
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
+from pyenphase import EnvoyAuthenticationRequired, EnvoyError
+from pyenphase.const import URL_TARIFF
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 from syrupy.assertion import SnapshotAssertion
 
 from custom_components.enphase_envoy_raw_data.const import DOMAIN
@@ -15,15 +19,10 @@ from custom_components.enphase_envoy_raw_data.services import (
     ATTR_FROM_CACHE,
     ATTR_METHOD,
     ATTR_RISK_ACKNOWLEDGED,
-    ATTR_VALIDATE_MODE
+    ATTR_VALIDATE_MODE,
 )
-from homeassistant.config_entries import ConfigEntryState
-from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 
 from . import setup_integration
-
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 
 async def test_has_services(
@@ -61,13 +60,13 @@ async def test_service_load_unload(
             "read_data",
             {
                 ATTR_CONFIG_ENTRY_ID: config_entry.entry_id,
-                ATTR_ENDPOINT : "/api/v1/production/inverters"
+                ATTR_ENDPOINT: "/api/v1/production/inverters",
             },
             blocking=True,
             return_response=True,
         )
 
-    # test with simulated second loaded envoy for COV on envoylist handling 
+    # test with simulated second loaded envoy for COV on envoylist handling
     await setup_integration(hass, config_entry)
     assert config_entry.state is ConfigEntryState.LOADED
 
@@ -84,15 +83,14 @@ async def test_service_read_data(
     await setup_integration(hass, config_entry)
     assert config_entry.state is ConfigEntryState.LOADED
 
-    mock_envoy.request.return_value.read.return_value=b'{"tariff": {"currency": {"code": "EUR"}}}'
+    mock_envoy.request.return_value.read.return_value = (
+        b'{"tariff": {"currency": {"code": "EUR"}}}'
+    )
 
     result = await hass.services.async_call(
         DOMAIN,
         "read_data",
-        {
-            ATTR_CONFIG_ENTRY_ID: config_entry.entry_id,
-            ATTR_ENDPOINT : "/tariff"
-        },
+        {ATTR_CONFIG_ENTRY_ID: config_entry.entry_id, ATTR_ENDPOINT: "/tariff"},
         blocking=True,
         return_response=True,
     )
@@ -106,8 +104,8 @@ async def test_service_read_data(
         "read_data",
         {
             ATTR_CONFIG_ENTRY_ID: config_entry.entry_id,
-            ATTR_ENDPOINT : URL_TARIFF,
-            ATTR_FROM_CACHE: True
+            ATTR_ENDPOINT: URL_TARIFF,
+            ATTR_FROM_CACHE: True,
         },
         blocking=True,
         return_response=True,
@@ -125,20 +123,18 @@ async def test_service_read_text_data(
     await setup_integration(hass, config_entry)
     assert config_entry.state is ConfigEntryState.LOADED
 
-    mock_envoy.request.return_value.text.return_value='Test Ok'
+    mock_envoy.request.return_value.text.return_value = "Test Ok"
 
     result = await hass.services.async_call(
         DOMAIN,
         "read_data",
-        {
-            ATTR_CONFIG_ENTRY_ID: config_entry.entry_id,
-            ATTR_ENDPOINT : "/tariff"
-        },
+        {ATTR_CONFIG_ENTRY_ID: config_entry.entry_id, ATTR_ENDPOINT: "/tariff"},
         blocking=True,
         return_response=True,
     )
     assert result
     assert result["/tariff"] == "Test Ok"
+
 
 async def test_service_read_data_exceptions(
     hass: HomeAssistant,
@@ -156,10 +152,7 @@ async def test_service_read_data_exceptions(
         await hass.services.async_call(
             DOMAIN,
             "read_data",
-            {
-                ATTR_CONFIG_ENTRY_ID: "123456789",
-                ATTR_ENDPOINT : URL_TARIFF
-            },
+            {ATTR_CONFIG_ENTRY_ID: "123456789", ATTR_ENDPOINT: URL_TARIFF},
             blocking=True,
             return_response=True,
         )
@@ -172,10 +165,7 @@ async def test_service_read_data_exceptions(
         await hass.services.async_call(
             DOMAIN,
             "read_data",
-            {
-                ATTR_CONFIG_ENTRY_ID: config_entry.entry_id,
-                ATTR_ENDPOINT : "/tariff"
-            },
+            {ATTR_CONFIG_ENTRY_ID: config_entry.entry_id, ATTR_ENDPOINT: "/tariff"},
             blocking=True,
             return_response=True,
         )
@@ -188,17 +178,14 @@ async def test_service_read_data_exceptions(
         await hass.services.async_call(
             DOMAIN,
             "read_data",
-            {
-                ATTR_CONFIG_ENTRY_ID: config_entry.entry_id,
-                ATTR_ENDPOINT : "/tariff"
-            },
+            {ATTR_CONFIG_ENTRY_ID: config_entry.entry_id, ATTR_ENDPOINT: "/tariff"},
             blocking=True,
             return_response=True,
         )
 
     mock_envoy.request.side_effect = None
 
-    mock_envoy.request.return_value.status=300
+    mock_envoy.request.return_value.status = 300
 
     with pytest.raises(
         HomeAssistantError,
@@ -207,10 +194,7 @@ async def test_service_read_data_exceptions(
         await hass.services.async_call(
             DOMAIN,
             "read_data",
-            {
-                ATTR_CONFIG_ENTRY_ID: config_entry.entry_id,
-                ATTR_ENDPOINT : "/tariff"
-            },
+            {ATTR_CONFIG_ENTRY_ID: config_entry.entry_id, ATTR_ENDPOINT: "/tariff"},
             blocking=True,
             return_response=True,
         )
@@ -223,13 +207,11 @@ async def test_service_read_data_exceptions(
         await hass.services.async_call(
             DOMAIN,
             "read_data",
-            {
-                ATTR_CONFIG_ENTRY_ID: config_entry.entry_id,
-                ATTR_ENDPOINT : "/tariff"
-            },
+            {ATTR_CONFIG_ENTRY_ID: config_entry.entry_id, ATTR_ENDPOINT: "/tariff"},
             blocking=True,
             return_response=True,
         )
+
 
 async def test_service_send_data(
     hass: HomeAssistant,
@@ -240,18 +222,20 @@ async def test_service_send_data(
     await setup_integration(hass, config_entry)
     assert config_entry.state is ConfigEntryState.LOADED
 
-    mock_envoy.request.return_value.read.return_value=b'{"tariff": {"currency": {"code": "EUR"}}}'
+    mock_envoy.request.return_value.read.return_value = (
+        b'{"tariff": {"currency": {"code": "EUR"}}}'
+    )
 
     result = await hass.services.async_call(
         DOMAIN,
         "send_data",
         {
             ATTR_CONFIG_ENTRY_ID: config_entry.entry_id,
-            ATTR_ENDPOINT : "/tariff",
-            ATTR_METHOD : "POST",
+            ATTR_ENDPOINT: "/tariff",
+            ATTR_METHOD: "POST",
             ATTR_VALIDATE_MODE: True,
             ATTR_RISK_ACKNOWLEDGED: True,
-            ATTR_DATA : {"tariff": {"currency": {"code": "EUR"}}}
+            ATTR_DATA: {"tariff": {"currency": {"code": "EUR"}}},
         },
         blocking=True,
         return_response=True,
@@ -264,11 +248,11 @@ async def test_service_send_data(
         "send_data",
         {
             ATTR_CONFIG_ENTRY_ID: config_entry.entry_id,
-            ATTR_ENDPOINT : "/tariff",
-            ATTR_METHOD : "POST",
+            ATTR_ENDPOINT: "/tariff",
+            ATTR_METHOD: "POST",
             ATTR_VALIDATE_MODE: True,
             ATTR_RISK_ACKNOWLEDGED: True,
-            ATTR_DATA : '[{"T1": "V1"}, {"T2": "V2"}]'
+            ATTR_DATA: '[{"T1": "V1"}, {"T2": "V2"}]',
         },
         blocking=True,
         return_response=True,
@@ -281,11 +265,11 @@ async def test_service_send_data(
         "send_data",
         {
             ATTR_CONFIG_ENTRY_ID: config_entry.entry_id,
-            ATTR_ENDPOINT : "/tariff",
-            ATTR_METHOD : "POST",
+            ATTR_ENDPOINT: "/tariff",
+            ATTR_METHOD: "POST",
             ATTR_VALIDATE_MODE: False,
             ATTR_RISK_ACKNOWLEDGED: True,
-            ATTR_DATA : {"tariff": {"currency": {"code": "EUR"}}}
+            ATTR_DATA: {"tariff": {"currency": {"code": "EUR"}}},
         },
         blocking=True,
         return_response=True,
@@ -303,7 +287,9 @@ async def test_service_send_data_exceptions(
     await setup_integration(hass, config_entry)
     assert config_entry.state is ConfigEntryState.LOADED
 
-    mock_envoy.request.return_value.read.return_value=b'{"tariff": {"currency": {"code": "EUR"}}}'
+    mock_envoy.request.return_value.read.return_value = (
+        b'{"tariff": {"currency": {"code": "EUR"}}}'
+    )
 
     with pytest.raises(
         HomeAssistantError,
@@ -314,11 +300,11 @@ async def test_service_send_data_exceptions(
             "send_data",
             {
                 ATTR_CONFIG_ENTRY_ID: config_entry.entry_id,
-                ATTR_ENDPOINT : "/tariff",
-                ATTR_METHOD : "POST",
+                ATTR_ENDPOINT: "/tariff",
+                ATTR_METHOD: "POST",
                 ATTR_VALIDATE_MODE: True,
                 ATTR_RISK_ACKNOWLEDGED: False,
-                ATTR_DATA : {"tariff": {"currency": {"code": "EUR"}}}
+                ATTR_DATA: {"tariff": {"currency": {"code": "EUR"}}},
             },
             blocking=True,
             return_response=True,
@@ -333,11 +319,11 @@ async def test_service_send_data_exceptions(
             "send_data",
             {
                 ATTR_CONFIG_ENTRY_ID: config_entry.entry_id,
-                ATTR_ENDPOINT : "/tariff",
-                ATTR_METHOD : "POST",
+                ATTR_ENDPOINT: "/tariff",
+                ATTR_METHOD: "POST",
                 ATTR_VALIDATE_MODE: True,
                 ATTR_RISK_ACKNOWLEDGED: True,
-                ATTR_DATA : 'tariff : {"currency": {"code": "EUR"}}'
+                ATTR_DATA: 'tariff : {"currency": {"code": "EUR"}}',
             },
             blocking=True,
             return_response=True,
@@ -352,11 +338,11 @@ async def test_service_send_data_exceptions(
             "send_data",
             {
                 ATTR_CONFIG_ENTRY_ID: config_entry.entry_id,
-                ATTR_ENDPOINT : "/tariff",
-                ATTR_METHOD : "POST",
+                ATTR_ENDPOINT: "/tariff",
+                ATTR_METHOD: "POST",
                 ATTR_VALIDATE_MODE: True,
                 ATTR_RISK_ACKNOWLEDGED: True,
-                ATTR_DATA : None
+                ATTR_DATA: None,
             },
             blocking=True,
             return_response=True,
@@ -369,18 +355,18 @@ async def test_service_send_data_exceptions(
         pytest.raises(
             HomeAssistantError,
             match="Invalid parameters , Error:",
-        )
+        ),
     ):
         await hass.services.async_call(
             DOMAIN,
             "send_data",
             {
                 ATTR_CONFIG_ENTRY_ID: config_entry.entry_id,
-                ATTR_ENDPOINT : "/tariff",
-                ATTR_METHOD : "POST",
+                ATTR_ENDPOINT: "/tariff",
+                ATTR_METHOD: "POST",
                 ATTR_VALIDATE_MODE: False,
                 ATTR_RISK_ACKNOWLEDGED: True,
-                ATTR_DATA : {"tariff": {"currency": {"code": "EUR"}}}
+                ATTR_DATA: {"tariff": {"currency": {"code": "EUR"}}},
             },
             blocking=True,
             return_response=True,

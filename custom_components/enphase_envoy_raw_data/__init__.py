@@ -1,11 +1,13 @@
-"""Initialization for Enphase Envoy Raw Data Support.
+"""
+Initialization for Enphase Envoy Raw Data Support.
 
 This custom integration registers an enphase_envoy_raw_data integration
 that only provides a read_data(endpoint) and send_data(endpoint,data)
 action/service. No entities are provided.
 
-!!! SENDING DATA TO AN ENVOY ENDPOINT HAS RISK FOR PROPER OPERATION OF THE ENVOY.
-DOING SO IS AT YOUR OWN RISK AND SHOULD ONLY BE DONE FULLY UNDERSTANDING ANY EFFECT OF IT !!!
+!!! SENDING DATA TO AN ENVOY ENDPOINT HAS RISK FOR PROPER OPERATION
+OF THE ENVOY. DOING SO IS AT YOUR OWN RISK AND SHOULD ONLY BE DONE
+FULLY UNDERSTANDING ANY EFFECT OF IT !!!
 
 This integration does not replace the core integration. It can be used next to it
 """
@@ -13,26 +15,27 @@ This integration does not replace the core integration. It can be used next to i
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
-from pyenphase import Envoy
-
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST
-from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
-from homeassistant.helpers.typing import ConfigType
+from pyenphase import Envoy
 
 from .const import DOMAIN, UNIQUE_ID
 from .coordinator import EnphaseRawDataConfigEntry, EnphaseRawDataUpdateCoordinator
 from .services import setup_hass_services
 
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.typing import ConfigType
+
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:  # noqa: ARG001
     """Set up Enphase Envoy raw data integration."""
-
     # setup the enphase_envoy_raw_data services
     await setup_hass_services(hass)
     return True
@@ -40,7 +43,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Enphase Envoy raw data support from a config entry."""
-
     host = entry.data[CONF_HOST]
     session = async_create_clientsession(hass, verify_ssl=False)
     envoy = Envoy(host, session)
@@ -53,7 +55,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             entry, unique_id=f"{UNIQUE_ID}{envoy.serial_number}"
         )
 
-    if entry.unique_id.replace(UNIQUE_ID, "") != envoy.serial_number:
+    if (unique_id := entry.unique_id) and unique_id.replace(
+        UNIQUE_ID, ""
+    ) != envoy.serial_number:
         # If the serial number of the device does not match the unique_id
         # of the config entry, it likely means the DHCP lease has expired
         # and the device has been assigned a new IP address. We need to
@@ -83,7 +87,8 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
 
 async def async_unload_entry(
-    hass: HomeAssistant, entry: EnphaseRawDataConfigEntry
+    hass: HomeAssistant,  # noqa: ARG001
+    entry: EnphaseRawDataConfigEntry,
 ) -> bool:
     """Unload a config entry."""
     coordinator = entry.runtime_data

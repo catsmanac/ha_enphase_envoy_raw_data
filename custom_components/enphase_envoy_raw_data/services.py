@@ -1,11 +1,13 @@
-"""Services for Enphase Envoy Raw Data Support.
+"""
+Services for Enphase Envoy Raw Data Support.
 
 This custom integration registers an enphase_envoy_raw_data integration
 that only provides a read_data(endpoint) and send_data(endpoint,data)
 action/service. No entities are provided.
 
-!!! SENDING DATA TO AN ENVOY ENDPOINT HAS RISK FOR PROPER OPERATION OF THE ENVOY.
-DOING SO IS AT YOUR OWN RISK AND SHOULD ONLY BE DONE FULLY UNDERSTANDING ANY EFFECT OF IT !!!
+!!! SENDING DATA TO AN ENVOY ENDPOINT HAS RISK FOR PROPER OPERATION
+OF THE ENVOY. DOING SO IS AT YOUR OWN RISK AND SHOULD ONLY BE DONE
+FULLY UNDERSTANDING ANY EFFECT OF IT !!!
 
 This integration does not replace the core integration. It can be used next to it
 """
@@ -13,13 +15,11 @@ This integration does not replace the core integration. It can be used next to i
 from __future__ import annotations
 
 import logging
-from typing import Any, Never
+from typing import TYPE_CHECKING, Any, Never
 
-from aiohttp import ClientError, ClientResponse
 import orjson
-from pyenphase import EnvoyError
 import voluptuous as vol
-
+from aiohttp import ClientError, ClientResponse
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import (
     HomeAssistant,
@@ -28,9 +28,12 @@ from homeassistant.core import (
     SupportsResponse,
 )
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
+from pyenphase import EnvoyError
 
 from .const import DOMAIN, INVALID_AUTH_ERRORS
-from .coordinator import EnphaseRawDataUpdateCoordinator
+
+if TYPE_CHECKING:
+    from .coordinator import EnphaseRawDataUpdateCoordinator
 
 ATTR_CONFIG_ENTRY_ID = "config_entry_id"
 ATTR_ENDPOINT = "endpoint"
@@ -90,19 +93,19 @@ def _find_envoy_coordinator(
     return coordinator
 
 
-async def _envoy_request(
+async def _envoy_request(  # noqa: PLR0913
     hass: HomeAssistant,
     call: ServiceCall,
     endpoint: str,
     method: str | None = None,
     data: dict[str, Any] | None = None,
-    to_cache: bool = False,
-    from_cache: bool = False,
+    to_cache: bool = False,  # noqa: FBT001, FBT002
+    from_cache: bool = False,  # noqa: FBT001, FBT002
 ) -> Any:
     """Send request to envoy an return reply."""
     coordinator = _find_envoy_coordinator(hass, call)
     envoy_to_use = coordinator.envoy
-    if from_cache and endpoint in envoy_to_use.data.raw:
+    if from_cache and envoy_to_use.data and endpoint in envoy_to_use.data.raw:
         _LOGGER.debug(
             "envoy_request, return data from cache %s", envoy_to_use.data.raw[endpoint]
         )
@@ -124,24 +127,19 @@ async def _envoy_request(
             _raise_ha_error(call, "envoy_error", envoy_to_use.host, err.args[0])
         break
 
-    if not (200 <= response.status < 300):
+    if not (200 <= response.status < 300):  # noqa: PLR2004
         _raise_ha_error(
-            call,
-            "envoy_error",
-            f"{envoy_to_use.host}{endpoint}",
-            f"{response.status}"
+            call, "envoy_error", f"{envoy_to_use.host}{endpoint}", f"{response.status}"
         )
-    _LOGGER.debug(
-        "envoy_request, request status %s", response.status
-    )
+    _LOGGER.debug("envoy_request, request status %s", response.status)
 
     try:
         result = orjson.loads(await response.read())
-    except (orjson.JSONDecodeError, ValueError):
+    except orjson.JSONDecodeError, ValueError:
         # it's xml or html
         _LOGGER.debug("envoy_request, No JSON data returned, decode it")
         result = await response.text()
-    if to_cache:
+    if to_cache and envoy_to_use.data:
         envoy_to_use.data.raw[endpoint] = result
     return result
 
@@ -186,9 +184,7 @@ async def setup_hass_services(hass: HomeAssistant) -> ServiceResponse:
         _LOGGER.debug("send_data_service endpoint: %s data: %s", endpoint, data)
         try:
             # make data dict or list
-            data_to_send = (
-                data if isinstance(data, (dict, list)) else orjson.loads(str(data))
-            )
+            data_to_send = data if isinstance(data, dict) else orjson.loads(str(data))
         except (orjson.JSONDecodeError, ValueError, TypeError) as err:
             _raise_validation(
                 "envoy_service_invalid_parameter",
@@ -198,7 +194,8 @@ async def setup_hass_services(hass: HomeAssistant) -> ServiceResponse:
         # if in validate mode return data to send
         if call.data.get(ATTR_VALIDATE_MODE):
             _LOGGER.debug(
-                "send_data_service, test mode, not sending data, returning formatted data: %s",
+                "send_data_service, test mode, not sending data, \
+                    returning formatted data: %s",
                 {endpoint: data_to_send},
             )
             return {endpoint: data_to_send}

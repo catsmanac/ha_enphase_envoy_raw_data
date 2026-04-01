@@ -1,11 +1,18 @@
 """Define test fixtures for Enphase Envoy."""
 
-from collections.abc import AsyncGenerator, Generator
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest.mock import AsyncMock, Mock, patch
 
 import jwt
 import multidict
+import pytest
+from homeassistant.const import (
+    CONF_HOST,
+    CONF_NAME,
+    CONF_PASSWORD,
+    CONF_TOKEN,
+    CONF_USERNAME,
+)
 from pyenphase import (
     EnvoyACBPower,
     EnvoyBatteryAggregate,
@@ -23,21 +30,30 @@ from pyenphase.const import SupportedFeatures
 from pyenphase.models.dry_contacts import EnvoyDryContactSettings, EnvoyDryContactStatus
 from pyenphase.models.meters import EnvoyMeterData
 from pyenphase.models.tariff import EnvoyStorageSettings, EnvoyTariff
-import pytest
+from pytest_homeassistant_custom_component.common import (
+    MockConfigEntry,
+    load_json_object_fixture,
+)
 
-from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_USERNAME, CONF_TOKEN
-from homeassistant.core import HomeAssistant
-
-from custom_components.enphase_envoy_raw_data.const import DOMAIN, UNIQUE_ID
-from pytest_homeassistant_custom_component.common import MockConfigEntry, load_json_object_fixture
-from custom_components.enphase_envoy_raw_data.const import CONF_MANUAL_TOKEN
+from custom_components.enphase_envoy_raw_data.const import (
+    CONF_MANUAL_TOKEN,
+    DOMAIN,
+    UNIQUE_ID,
+)
 
 from . import envoy_token
 
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator, Generator
+
+    from homeassistant.core import HomeAssistant
+
+
 @pytest.fixture(autouse=True)
-def auto_enable_custom_integrations(enable_custom_integrations):
+def auto_enable_custom_integrations(enable_custom_integrations) -> None:  # noqa: ANN001, ARG001
     """Enable custom integrations."""
-    yield
+    return
+
 
 @pytest.fixture
 def mock_setup_entry() -> Generator[AsyncMock]:
@@ -51,14 +67,14 @@ def mock_setup_entry() -> Generator[AsyncMock]:
 
 @pytest.fixture(name="config_entry")
 def config_entry_fixture(
-    hass: HomeAssistant, 
+    hass: HomeAssistant,  # noqa: ARG001
     config: dict[str, str],
     request: pytest.FixtureRequest,
 ) -> MockConfigEntry:
     """Define a config entry fixture."""
-    token_mode: str = "none"
+    token_mode: str = "none"  # noqa: S105
     token_life: int = 365
-    data: dict[str,Any]={}
+    data: dict[str, Any] = {}
     if hasattr(request, "param"):
         if isinstance(request.param, list):
             token_mode = request.param[0]
@@ -66,9 +82,9 @@ def config_entry_fixture(
                 token_life = request.param[1]
         else:
             token_mode = request.param
-    if token_mode == "none":
+    if token_mode == "none":  # noqa: S105
         data = config
-    elif token_mode == "auto":
+    elif token_mode == "auto":  # noqa: S105
         # config contains token from automatic retrieval
         data = {
             CONF_HOST: "1.1.1.1",
@@ -78,7 +94,7 @@ def config_entry_fixture(
             CONF_TOKEN: envoy_token(token_life),
             CONF_MANUAL_TOKEN: False,
         }
-    elif token_mode == "manual":
+    elif token_mode == "manual":  # noqa: S105
         # config contains token from manual entry
         data = {
             CONF_HOST: "1.1.1.1",
@@ -167,10 +183,7 @@ async def mock_envoy(
 
 def load_envoy_fixture(mock_envoy: AsyncMock, fixture_name: str) -> None:
     """Load envoy model from fixture."""
-
-    json_fixture: dict[str, Any] = load_json_object_fixture(
-        f"{fixture_name}.json"
-    )
+    json_fixture: dict[str, Any] = load_json_object_fixture(f"{fixture_name}.json")
 
     mock_envoy.firmware = json_fixture["firmware"]
     mock_envoy.part_number = json_fixture["part_number"]
