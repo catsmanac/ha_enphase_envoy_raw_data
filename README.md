@@ -3,7 +3,7 @@
 
 # Enphase Envoy raw data
 
-This is a Home Assistant custom integration for [Enphase Envoy/IQ Gateway](https://enphase.com/en-us/products-and-services/envoy-and-combiner). 
+This is a Home Assistant custom integration for [Enphase Envoy/IQ Gateway](https://enphase.com/en-us/products-and-services/envoy-and-combiner).
 It provides 2 service actions to access Enphase IQ Gateway raw data:
 
 - read_data: GET request to the Envoy
@@ -12,7 +12,7 @@ It provides 2 service actions to access Enphase IQ Gateway raw data:
 > [!CAUTION]
 > ⚠️ Sending PUT/POST/DELETE requests to the Envoy is at your own risk! Only use this service action if you fully understand the required data format, the effect on the Envoy/IQ Gateway and accept the risk of potential negative impact on the Envoy operation. Also be aware that each new firmware pushed to your Envoy/IQ Gateway may expose different behavior and PUT/POST/DELETE request effects may suddenly change. ⚠️
 
-This integration provides no entities, for entities use the core [HA Core integration](https://www.home-assistant.io/integrations/enphase_envoy/) or another custom integration. It does **NOT** replace the core integration, both can be used at the same time. The intent is to provide additional specialized and more rarely used service actions which are not present in the core integration. It can run without the core integration, but the core integration would be needed to provide the [typical Envoy entities](https://www.home-assistant.io/integrations/enphase_envoy/#capabilities). 
+This integration provides no entities, for entities use the core [HA Core integration](https://www.home-assistant.io/integrations/enphase_envoy/) or another custom integration. It does **NOT** replace the core integration, both can be used at the same time. The intent is to provide additional specialized and more rarely used service actions which are not present in the core integration. It can run without the core integration, but the core integration would be needed to provide the [typical Envoy entities](https://www.home-assistant.io/integrations/enphase_envoy/#capabilities).
 
 Under the hood, this custom integration is a stripped down fork of the HA core integration and it is using the same [pyenphase library](https://pypi.org/project/pyenphase/) for communication to the Enphase Envoy/IQ Gateway. Entity creation, scheduled data collection and auto detection are removed. Each Envoy needs to be added manually. Token handling and refresh for firmware version 7.0 and later is retained.
 
@@ -28,7 +28,7 @@ First production versions. Only use with Home Assistant versions from 2025.3 to 
 
 # Installation and Configuration
 
-<details>  
+<details>
 <summary>Installation</summary>
 
 ## Installation
@@ -38,7 +38,7 @@ As with all Home Assistant configuration changes, first make appropriate backups
 ### Using HACS
 
 1. Install [HACS](https://hacs.xyz/) if you haven't already
-3. Add this GITHUB repository as a [custom integration repository](https://hacs.xyz/docs/faq/custom_repositories) to HACS
+2. In the future this custom integration will list in the HACS itegrations. If not yet, add this GITHUB repository as a [custom integration repository](https://hacs.xyz/docs/faq/custom_repositories) to HACS
 5. Go to the HACS Integrations page in HA, select this custom repository and download the `Enphase Envoy raw data` custom integration
 6. After download restart Home Assistant.
 7. Configure the custom integration in Home Assistant using the home assistant [configuration flow](https://www.home-assistant.io/getting-started/integration/) and select the `Enphase Envoy raw data` integration.
@@ -48,7 +48,7 @@ As with all Home Assistant configuration changes, first make appropriate backups
 ### Manual
 
 1. In Home Assistant create a folder /config/custom_components/enphase_envoy_raw_data
-2. Copy (only) the files in this repository in folder custom_components/enphase_envoy_raw_data into the Home Assistant folder /config/custom_components/enphase_envoy_raw_data.
+2. Copy (only) the files and folders in this repository in folder `custom_components/enphase_envoy_raw_data` into the Home Assistant folder /config/custom_components/enphase_envoy_raw_data.
 3. Restart Home Assistant
 4. Configure the custom integration in Home Assistant using the home assistant [configuration flow](https://www.home-assistant.io/getting-started/integration/) and select the `Enphase Envoy raw data` integration.
 
@@ -65,18 +65,20 @@ When first adding the integration or when adding another Envoy instance, enter b
 | Host | The name or IP address of the Envoy to configure.
 | Username | For firmware version 7.0 and later, enter your Enlighten cloud username. <br> For firmware before 7.0, enter username *installer* without a password. |
 | Password | For firmware version 7.0 and later, enter your Enlighten cloud password <br> For firmware before 7.0, with username *installer*, leave blank. |
-| want to enter token manually | If you wwant to enter a token manually, check this option and select **Submit** to switch to the token entry form. Use when your Enphase account uses multi-factor authentication or if you don't want to store username/password in the configuration data.|
+| I want to enter token manually | If you want to enter a token manually, check this option and select **Submit** to switch to the token entry form. Use when your Enphase account uses multi-factor authentication or if you don't want to store username/password in the configuration data.|
 | token | Enter an Envoy access token when in manual token entry mode. Use the link below the field to open the Enphase token portal.|
+
 The Enlighten cloud username and password for firmware version 7.0 and later will be used to obtain a 1-year-valid token from the enphase web-site when first configured or 1 month before expiry. When in manual token mode you will need to refresh the token manually. A notification will show 1 month before expiry.
 
 <details><summary>Example screenshots</summary>
 
 ![picture of configuring envoy](docs/Enphase_Envoy_raw_data_add_envoy.png "Configure Envoy with Enphase Envoy raw data custom integration")
 
-To switch to manual token entry, enter first the host ip address and then check this option and select **Submit**.
+To switch to manual token entry, first enter the host ip address and then check the `I want to enter token manually` option and select **Submit**.
 
 ![picture of configuring envoy with manual token entry](docs/Enphase_Envoy_raw_data_add_envoy_manual_token.png "Configure Envoy with Enphase Envoy raw data custom integration with manual token entry")
 
+To obtain a token from the Enphase token portal, select the **Enphase login** link below the token field.
 
 Upon successful configuration, the integration can be found in the Home Assistant integrations dashboard.
 
@@ -141,7 +143,7 @@ data:
 
 ### Cached data
 
-Each time a GET request is send, the response is stored or updated in an internal cache. If, for some reason, 2 actions are used requesting for the same data, the second action can request the data from the cache. This can avoid multiple requests for same data send to the Envoy. 
+Each time a GET request is send, the response is stored or updated in an internal cache. If, for some reason, 2 actions are used requesting for the same data, the second action can request the data from the cache. This can avoid multiple requests for same data send to the Envoy.
 
 Obviously, for an endpoint, there is a balance between request reduction and data age in the cache. For example, use 1 action that regularly sends the request while other related action would use the cached data. For the occasional data inspection using the developer tools action, this is not needed. When creating multiple actions working of the same data it can be an optimization.
 
@@ -228,7 +230,7 @@ mode: single
 > [!CAUTION]
 > ⚠️ Sending PUT/POST/DELETE requests is at your own risk! Only use this service action if you fully understand the required data format, the effect on the Envoy/IQ Gateway and accept the risk of potential negative impact on the Envoy operation. Also be aware that each new firmware pushed to your Envoy/IQ Gateway may expose different behavior and PUT/POST/DELETE request effects may suddenly change. ⚠️
 
-This service action enables sending a PUT, POST or DELETE request to an Envoy endpoint and receive the reply. 
+This service action enables sending a PUT, POST or DELETE request to an Envoy endpoint and receive the reply.
 
 <details><summary>Example screenshots of Developer tools actions with Enphase_Envoy_raw_data send_data</summary>
 
@@ -268,7 +270,7 @@ data:
   test_mode: true
   endpoint: /test
   data: >
-    {# Some comment #} 
+    {# Some comment #}
     {% set config1 = dict(current = "1.0", voltage = "110", frequency = "50") %}
     {% set config2 = {"target": "60", "min": "25", "max": "93"} %}
     {% set data = dict( coil1 = config1, target = config2, runtime = "10", alert = false) %}
@@ -308,7 +310,7 @@ The response of PUT, POST or DELETE request is returned as JSON with the specifi
 
 ## Usage considerations
 
-- Read-data and send-data return a json object with the endpoint as key. When using the data be aware of this. For example endpoint xyz/abc that returns 
+- Read-data and send-data return a json object with the endpoint as key. When using the data be aware of this. For example endpoint xyz/abc that returns
 
 ```json
     {"a":"1","b":"2"}
