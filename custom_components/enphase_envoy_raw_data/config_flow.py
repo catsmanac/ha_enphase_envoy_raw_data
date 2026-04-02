@@ -1,23 +1,22 @@
-"""Configuration for Enphase Envoy Raw Data Support.
+"""
+Configuration for Enphase Envoy Raw Data Support.
 
 This custom integration registers an enphase_envoy_raw_data integration
 that only provides a read_data(endpoint) and send_data(endpoint,data)
 action/service. No entities are provided.
 
-!!! SENDING DATA TO AN ENVOY ENDPOINT HAS RISK FOR PROPER OPERATION OF THE ENVOY.
-DOING SO IS AT YOUR OWN RISK AND SHOULD ONLY BE DONE FULLY UNDERSTANDING ANY EFFECT OF IT !!!
+!!! SENDING DATA TO AN ENVOY ENDPOINT HAS RISK FOR PROPER OPERATION OF
+THE ENVOY. DOING SO IS AT YOUR OWN RISK AND SHOULD ONLY BE DONE FULLY
+UNDERSTANDING ANY EFFECT OF IT !!!
 
 This integration does not replace the core integration. It can be used next to it
 """
 
-from collections.abc import Mapping
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import jwt
-from pyenphase import Envoy, EnvoyError, EnvoyTokenAuth
 import voluptuous as vol
-
 from homeassistant.config_entries import (
     SOURCE_REAUTH,
     ConfigEntry,
@@ -33,17 +32,22 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.typing import VolDictType
 from homeassistant.util import dt as dt_util
+from pyenphase import Envoy, EnvoyError, EnvoyTokenAuth
 
 from .const import (
+    ACCESS_TOKEN_LOGIN_URL,
+    CONF_MANUAL_TOKEN,
     DOMAIN,
     ENVOY_NAME,
     INVALID_AUTH_ERRORS,
     UNIQUE_ID,
-    CONF_MANUAL_TOKEN,
-    ACCESS_TOKEN_LOGIN_URL,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from homeassistant.helpers.typing import VolDictType
 
 type OurConfigEntry = ConfigEntry
 
@@ -71,7 +75,7 @@ def token_lifetime(token: str) -> str:
         exp = jwt_payload.get("exp")
         if exp is not None:
             days_left = str(int((int(exp) - dt_util.utcnow().timestamp()) / 86400))
-    except (jwt.PyJWTError, KeyError, TypeError, ValueError):
+    except jwt.PyJWTError, KeyError, TypeError, ValueError:
         days_left = UNKNOWN_TOKEN_TEXT
     return days_left
 
@@ -141,7 +145,9 @@ class EnphaseExtConfigFlow(ConfigFlow, domain=DOMAIN):
             schema[vol.Optional(CONF_TOKEN, default="")] = str
         else:
             # in automatic token mode show username and password inputs
-            schema[vol.Optional(CONF_USERNAME, default=self.username or default_username)] = str
+            schema[
+                vol.Optional(CONF_USERNAME, default=self.username or default_username)
+            ] = str
             schema[vol.Optional(CONF_PASSWORD, default="")] = str
 
         # option to switch between automatic and manual token entry modes
@@ -283,7 +289,11 @@ class EnphaseExtConfigFlow(ConfigFlow, domain=DOMAIN):
             if token:
                 token_days_left = token_lifetime(token)
 
-        serial = reconfigure_entry.unique_id.replace(UNIQUE_ID, "") or "-"
+        serial = (
+            reconfigure_entry.unique_id.replace(UNIQUE_ID, "") or "-"
+            if reconfigure_entry.unique_id
+            else "-"
+        )
         self.context["title_placeholders"] = {
             CONF_SERIAL: serial,
             CONF_HOST: reconfigure_entry.data[CONF_HOST],
@@ -301,7 +311,8 @@ class EnphaseExtConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_reauth(
-        self, entry_data: Mapping[str, Any]
+        self,
+        entry_data: Mapping[str, Any],  # noqa: ARG002
     ) -> ConfigFlowResult:
         """Handle configuration by re-auth."""
         return await self.async_step_reauth_confirm()
@@ -348,7 +359,11 @@ class EnphaseExtConfigFlow(ConfigFlow, domain=DOMAIN):
             if token:
                 token_days_left = token_lifetime(token)
 
-        serial = reauth_entry.unique_id.replace(UNIQUE_ID, "") or "-"
+        serial = (
+            reauth_entry.unique_id.replace(UNIQUE_ID, "") or "-"
+            if reauth_entry.unique_id
+            else "-"
+        )
         self.context["title_placeholders"] = {
             CONF_SERIAL: serial,
             CONF_HOST: reauth_entry.data[CONF_HOST],

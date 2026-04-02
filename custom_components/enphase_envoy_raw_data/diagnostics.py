@@ -1,21 +1,22 @@
-"""Data Coordinator for Enphase Envoy Raw Data Support.
+"""
+Data Coordinator for Enphase Envoy Raw Data Support.
 
 This custom integration registers an enphase_envoy_raw_data integration
 that only provides a read_data(endpoint) and send_data(endpoint,data)
 action/service. No entities are provided.
 
-!!! SENDING DATA TO AN ENVOY ENDPOINT HAS RISK FOR PROPER OPERATION OF THE ENVOY.
-DOING SO IS AT YOUR OWN RISK AND SHOULD ONLY BE DONE FULLY UNDERSTANDING ANY EFFECT OF IT !!!
+!!! SENDING DATA TO AN ENVOY ENDPOINT HAS RISK FOR PROPER OPERATION
+OF THE ENVOY. DOING SO IS AT YOUR OWN RISK AND SHOULD ONLY BE DONE
+FULLY UNDERSTANDING ANY EFFECT OF IT !!!
 
 This integration does not replace the core integration. It can be used next to it
 """
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.diagnostics import async_redact_data
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_NAME,
     CONF_PASSWORD,
@@ -23,7 +24,10 @@ from homeassistant.const import (
     CONF_UNIQUE_ID,
     CONF_USERNAME,
 )
-from homeassistant.core import HomeAssistant
+
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
 
 TO_REDACT = {
     CONF_NAME,
@@ -37,10 +41,10 @@ TO_REDACT = {
 
 
 async def async_get_config_entry_diagnostics(
-    hass: HomeAssistant, entry: ConfigEntry
+    hass: HomeAssistant,
+    entry: ConfigEntry,
 ) -> dict[str, Any]:
     """Return diagnostics for a config entry."""
-
     diagnostic_data: dict[str, Any] = {
         "config_entry": async_redact_data(entry.as_dict(), TO_REDACT),
     }

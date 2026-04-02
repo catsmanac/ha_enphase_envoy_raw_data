@@ -1,22 +1,20 @@
 """Test Enphase Envoy diagnostics."""
 
-from unittest.mock import AsyncMock
+from typing import TYPE_CHECKING
 
-from pyenphase.exceptions import EnvoyError
-import pytest
-from syrupy.assertion import SnapshotAssertion
-
-from custom_components.enphase_envoy_raw_data.const import DOMAIN
-
-from homeassistant.core import HomeAssistant
+from pytest_homeassistant_custom_component.components.diagnostics import (
+    get_diagnostics_for_config_entry,
+)
 
 from . import setup_integration
 
-from pytest_homeassistant_custom_component.common import MockConfigEntry
-from pytest_homeassistant_custom_component.components.diagnostics import get_diagnostics_for_config_entry
-from pytest_homeassistant_custom_component.typing import ClientSessionGenerator
+if TYPE_CHECKING:
+    from unittest.mock import AsyncMock
 
-
+    from homeassistant.core import HomeAssistant
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+    from pytest_homeassistant_custom_component.typing import ClientSessionGenerator
+    from syrupy.assertion import SnapshotAssertion
 
 # Fields to exclude from snapshot as they change each run
 TO_EXCLUDE = {
@@ -31,7 +29,7 @@ TO_EXCLUDE = {
 }
 
 
-def limit_diagnostic_attrs(prop, path) -> bool:
+def limit_diagnostic_attrs(prop: str, path) -> bool:  # noqa: ANN001
     """Mark attributes to exclude from diagnostic snapshot."""
     return prop in TO_EXCLUDE
 
@@ -47,4 +45,4 @@ async def test_entry_diagnostics(
     await setup_integration(hass, config_entry)
     assert await get_diagnostics_for_config_entry(
         hass, hass_client, config_entry
-    ) == snapshot(exclude=limit_diagnostic_attrs)
+    ) == snapshot(exclude=limit_diagnostic_attrs)  # pyright: ignore reportArgumentType=false
