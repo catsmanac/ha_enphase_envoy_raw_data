@@ -45,4 +45,4 @@ async def test_entry_diagnostics(
     await setup_integration(hass, config_entry)
     assert await get_diagnostics_for_config_entry(
         hass, hass_client, config_entry
-    ) == snapshot(exclude=limit_diagnostic_attrs)  # pyright: ignore reportArgumentType=false
+    ) == snapshot(exclude=limit_diagnostic_attrs)  # type: ignore [arg-type]

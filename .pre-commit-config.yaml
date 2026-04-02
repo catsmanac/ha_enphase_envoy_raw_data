@@ -8,46 +8,46 @@
 # to the standard location at $HOME/.local/ha-venv.
 #
 repos:
-  # - repo: local
-  #   hooks:
-  #     # Run the Ruff linter with auto-fix
-  #     - id: ruff
-  #       name: ruff
-  #       entry: bash -c 'VENV_PATHS=("$HOME/.local/ha-venv" ".local/ha-venv"); for venv in "${VENV_PATHS[@]}"; do if [[ -f "$venv/bin/ruff" ]]; then source "$venv/bin/activate" 2>/dev/null || true; ruff check --fix --exit-non-zero-on-fix "$@"; exit $?; fi; done; echo "⚠️  Skipping ruff (venv not ready)"; exit 0' --
-  #       language: system
-  #       types: [python]
-  #       require_serial: true
-  #       pass_filenames: true
+  - repo: local
+    hooks:
+      # Run the Ruff linter with auto-fix
+      - id: ruff
+        name: ruff
+        entry: bash -c 'VENV_PATHS=("$HOME/.local/ha-venv" ".local/ha-venv"); for venv in "${VENV_PATHS[@]}"; do if [[ -f "$venv/bin/ruff" ]]; then source "$venv/bin/activate" 2>/dev/null || true; ruff check --fix --exit-non-zero-on-fix "$@"; exit $?; fi; done; echo "⚠️  Skipping ruff (venv not ready)"; exit 0' --
+        language: system
+        types: [python]
+        require_serial: true
+        pass_filenames: true
 
-  #     # Run the Ruff formatter
-  #     - id: ruff-format
-  #       name: ruff format
-  #       entry: bash -c 'VENV_PATHS=("$HOME/.local/ha-venv" ".local/ha-venv"); for venv in "${VENV_PATHS[@]}"; do if [[ -f "$venv/bin/ruff" ]]; then source "$venv/bin/activate" 2>/dev/null || true; ruff format "$@"; exit $?; fi; done; echo "⚠️  Skipping ruff format (venv not ready)"; exit 0' --
-  #       language: system
-  #       types: [python]
-  #       require_serial: true
-  #       pass_filenames: true
+      # Run the Ruff formatter
+      - id: ruff-format
+        name: ruff format
+        entry: bash -c 'VENV_PATHS=("$HOME/.local/ha-venv" ".local/ha-venv"); for venv in "${VENV_PATHS[@]}"; do if [[ -f "$venv/bin/ruff" ]]; then source "$venv/bin/activate" 2>/dev/null || true; ruff format "$@"; exit $?; fi; done; echo "⚠️  Skipping ruff format (venv not ready)"; exit 0' --
+        language: system
+        types: [python]
+        require_serial: true
+        pass_filenames: true
 
-  #     # Spell checking
-  #     - id: codespell
-  #       name: codespell
-  #       entry: bash -c 'VENV_PATHS=("$HOME/.local/ha-venv" ".local/ha-venv"); for venv in "${VENV_PATHS[@]}"; do if [[ -f "$venv/bin/codespell" ]]; then source "$venv/bin/activate" 2>/dev/null || true; codespell --ignore-words-list=aiport,astroid,checkin,currenty,hass,iif,incomfort,lookin,nam,NotIn --skip="./.*,*.csv,*.json,*.ambr,uv.lock" --quiet-level=2 "$@"; exit $?; fi; done; echo "⚠️  Skipping codespell (venv not ready)"; exit 0' --
-  #       language: system
-  #       types_or: [python, markdown, rst]
-  #       exclude_types: [csv, json, html]
-  #       files: ^(custom_components/|tests/|script/|README\.md|CONTRIBUTING\.md|DEPENDENCIES\.md)
-  #       pass_filenames: true
+      # Spell checking
+      - id: codespell
+        name: codespell
+        entry: bash -c 'VENV_PATHS=("$HOME/.local/ha-venv" ".local/ha-venv"); for venv in "${VENV_PATHS[@]}"; do if [[ -f "$venv/bin/codespell" ]]; then source "$venv/bin/activate" 2>/dev/null || true; codespell --ignore-words-list=aiport,astroid,checkin,currenty,hass,iif,incomfort,lookin,nam,NotIn --skip="./.*,*.csv,*.json,*.ambr,uv.lock" --quiet-level=2 "$@"; exit $?; fi; done; echo "⚠️  Skipping codespell (venv not ready)"; exit 0' --
+        language: system
+        types_or: [python, markdown, rst]
+        exclude_types: [csv, json, html]
+        files: ^(custom_components/|tests/|script/|README\.md|CONTRIBUTING\.md|DEPENDENCIES\.md)
+        pass_filenames: true
 
-      # Type checking with Pyright (optional, can be slow)
-      # Uncomment to enable in pre-commit (recommended to use in IDE instead)
-      # - id: pyright
-      #   name: pyright
-      #   entry: bash -c '"$HOME/.local/ha-venv/bin/pyright" "$@"' --
-      #   language: system
-      #   types: [python]
-      #   pass_filenames: true
-      #   # Run manually with: pre-commit run pyright --all-files
-      #   stages: [manual]
+  # Type checking with Pyright (optional, can be slow)
+  # Uncomment to enable in pre-commit (recommended to use in IDE instead)
+  # - id: pyright
+  #   name: pyright
+  #   entry: bash -c '"$HOME/.local/ha-venv/bin/pyright" "$@"' --
+  #   language: system
+  #   types: [python]
+  #   pass_filenames: true
+  #   # Run manually with: pre-commit run pyright --all-files
+  #   stages: [manual]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
@@ -63,6 +63,8 @@ repos:
       - id: check-toml
       - id: check-xml
       - id: check-yaml
+        args:
+          - --unsafe
       - id: detect-private-key
       - id: end-of-file-fixer
       - id: trailing-whitespace
@@ -90,13 +92,34 @@ repos:
     rev: v2.4.2
     hooks:
       - id: codespell
+        args:
+          - --ignore-words-list=hass
+          - --skip="./.*,*.csv,*.json,*.ambr"
+          - --quiet-level=2
+        exclude_types: [csv, json, html]
+        exclude: ^tests/fixtures/|homeassistant/generated/|tests/components/.*/snapshots/
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.19.1
     hooks:
       - id: mypy
-        additional_dependencies: ["types-orjson"]
+        additional_dependencies:
+          [
+            "types-orjson",
+            "pyenphase",
+            "homeassistant",
+            "pytest",
+            "respx",
+            "syrupy",
+            "freezegun",
+            "pytest_homeassistant_custom_component",
+          ]
+        args:
+          - --explicit-package-bases
+          - --follow-untyped-imports
   - repo: https://github.com/PyCQA/bandit
     rev: 1.9.4
     hooks:
       - id: bandit
-        args: [-x, tests]
+        args:
+          - -x=tests,
+          - -s=["B101", "B105"]

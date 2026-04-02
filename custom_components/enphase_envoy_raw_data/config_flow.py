@@ -119,7 +119,7 @@ async def validate_input(
 
 
 class EnphaseExtConfigFlow(ConfigFlow, domain=DOMAIN):
-    """Enphase Envoy Raw Datas config flow."""
+    """Enphase Envoy Raw Data config flow."""
 
     VERSION = 1
 
