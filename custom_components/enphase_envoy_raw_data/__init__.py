@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:  # noqa: ARG001
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up Enphase Envoy raw data integration."""
     # setup the enphase_envoy_raw_data services
     await setup_hass_services(hass)
@@ -87,7 +87,7 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
 
 async def async_unload_entry(
-    hass: HomeAssistant,  # noqa: ARG001
+    hass: HomeAssistant,
     entry: EnphaseRawDataConfigEntry,
 ) -> bool:
     """Unload a config entry."""

@@ -20,7 +20,8 @@ ignore = [
     "S105", # possible hard coded creds
     "S106", # possible hard coded password
     "ARG001", # unused-function-argument
-    "PLR0913", # too-many-arguments (
+    "PLR0913", # too-many-arguments
+    "TC002", # move third-party import into type-checking block
 ]
 
 [lint.flake8-pytest-style]

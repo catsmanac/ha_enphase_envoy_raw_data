@@ -87,7 +87,7 @@ class EnphaseRawDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     def _track_token_lifetime(self) -> bool:
         """Update tokenlifetime and return if still fresh."""
-        assert isinstance(self.envoy.auth, EnvoyTokenAuth)  # noqa: S101
+        assert isinstance(self.envoy.auth, EnvoyTokenAuth)
         self.token_lifetime = int(
             (self.envoy.auth.expire_timestamp - dt_util.utcnow().timestamp()) / 86400
         )
@@ -96,7 +96,7 @@ class EnphaseRawDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     @callback
     def _async_refresh_token_if_needed(self, now: datetime.datetime) -> None:  # noqa: ARG002
         """Proactively refresh token if its stale in case cloud services goes down."""
-        assert isinstance(self.envoy.auth, EnvoyTokenAuth)  # noqa: S101
+        assert isinstance(self.envoy.auth, EnvoyTokenAuth)
         fresh = self._track_token_lifetime()
         name = self.name
         _LOGGER.debug(
@@ -132,7 +132,7 @@ class EnphaseRawDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def _async_try_refresh_token(self) -> None:
         """Try to refresh token."""
-        assert isinstance(self.envoy.auth, EnvoyTokenAuth)  # noqa: S101
+        assert isinstance(self.envoy.auth, EnvoyTokenAuth)
         _LOGGER.debug("%s: Trying to refresh token", self.name)
         try:
             await self.envoy.auth.refresh()
@@ -216,7 +216,7 @@ class EnphaseRawDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         """Set up and authenticate with the envoy."""
         envoy = self.envoy
         await envoy.setup()
-        assert envoy.serial_number is not None  # noqa: S101
+        assert envoy.serial_number is not None
         self.envoy_serial_number = envoy.serial_number
         if token := self.config_entry.data.get(CONF_TOKEN):
             with contextlib.suppress(*INVALID_AUTH_ERRORS):

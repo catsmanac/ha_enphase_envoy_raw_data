@@ -50,7 +50,7 @@ if TYPE_CHECKING:
 
 
 @pytest.fixture(autouse=True)
-def auto_enable_custom_integrations(enable_custom_integrations) -> None:  # noqa: ANN001, ARG001
+def auto_enable_custom_integrations(enable_custom_integrations) -> None:  # noqa: ANN001
     """Enable custom integrations."""
     return
 
@@ -67,12 +67,12 @@ def mock_setup_entry() -> Generator[AsyncMock]:
 
 @pytest.fixture(name="config_entry")
 def config_entry_fixture(
-    hass: HomeAssistant,  # noqa: ARG001
+    hass: HomeAssistant,
     config: dict[str, str],
     request: pytest.FixtureRequest,
 ) -> MockConfigEntry:
     """Define a config entry fixture."""
-    token_mode: str = "none"  # noqa: S105
+    token_mode: str = "none"
     token_life: int = 365
     data: dict[str, Any] = {}
     if hasattr(request, "param"):
@@ -82,9 +82,9 @@ def config_entry_fixture(
                 token_life = request.param[1]
         else:
             token_mode = request.param
-    if token_mode == "none":  # noqa: S105
+    if token_mode == "none":
         data = config
-    elif token_mode == "auto":  # noqa: S105
+    elif token_mode == "auto":
         # config contains token from automatic retrieval
         data = {
             CONF_HOST: "1.1.1.1",
@@ -94,7 +94,7 @@ def config_entry_fixture(
             CONF_TOKEN: envoy_token(token_life),
             CONF_MANUAL_TOKEN: False,
         }
-    elif token_mode == "manual":  # noqa: S105
+    elif token_mode == "manual":
         # config contains token from manual entry
         data = {
             CONF_HOST: "1.1.1.1",

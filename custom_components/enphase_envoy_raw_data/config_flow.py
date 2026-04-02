@@ -59,7 +59,7 @@ _LOGGER = logging.getLogger(__name__)
 
 AVOID_REFLECT_KEYS = {CONF_PASSWORD, CONF_TOKEN}
 
-UNKNOWN_TOKEN_TEXT = "?"  # noqa: S105
+UNKNOWN_TOKEN_TEXT = "?"
 
 
 def without_avoid_reflect_keys(dictionary: Mapping[str, Any]) -> dict[str, Any]:
@@ -91,7 +91,7 @@ def descriptions(
     }
 
 
-async def validate_input(  # noqa: PLR0913
+async def validate_input(
     hass: HomeAssistant,
     host: str,
     username: str,

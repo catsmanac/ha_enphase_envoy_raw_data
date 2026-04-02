@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 import respx
-from freezegun.api import FrozenDateTimeFactory  # noqa: TC002
+from freezegun.api import FrozenDateTimeFactory
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import (
     CONF_HOST,
@@ -15,7 +15,7 @@ from homeassistant.const import (
     CONF_TOKEN,
     CONF_USERNAME,
 )
-from homeassistant.core import HomeAssistant  # noqa: TC002
+from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import UpdateFailed
 from jwt import encode

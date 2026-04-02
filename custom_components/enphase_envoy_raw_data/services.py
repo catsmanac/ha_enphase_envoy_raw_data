@@ -93,7 +93,7 @@ def _find_envoy_coordinator(
     return coordinator
 
 
-async def _envoy_request(  # noqa: PLR0913
+async def _envoy_request(
     hass: HomeAssistant,
     call: ServiceCall,
     endpoint: str,
