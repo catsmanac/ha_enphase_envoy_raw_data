@@ -1,6 +1,5 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration#readme)
 
-
 # Enphase Envoy raw data
 
 This is a Home Assistant custom integration for [Enphase Envoy/IQ Gateway](https://enphase.com/en-us/products-and-services/envoy-and-combiner).
@@ -38,10 +37,10 @@ As with all Home Assistant configuration changes, first make appropriate backups
 ### Using HACS
 
 1. Install [HACS](https://hacs.xyz/) if you haven't already
-2. In the future this custom integration will list in the HACS itegrations. If not yet, add this GITHUB repository as a [custom integration repository](https://hacs.xyz/docs/faq/custom_repositories) to HACS
-5. Go to the HACS Integrations page in HA, select this custom repository and download the `Enphase Envoy raw data` custom integration
-6. After download restart Home Assistant.
-7. Configure the custom integration in Home Assistant using the home assistant [configuration flow](https://www.home-assistant.io/getting-started/integration/) and select the `Enphase Envoy raw data` integration.
+2. In the future this custom integration will list in the HACS integrations. If not yet, add this GITHUB repository as a [custom integration repository](https://hacs.xyz/docs/faq/custom_repositories) to HACS
+3. Go to the HACS Integrations page in HA, select this custom repository and download the `Enphase Envoy raw data` custom integration
+4. After download restart Home Assistant.
+5. Configure the custom integration in Home Assistant using the home assistant [configuration flow](https://www.home-assistant.io/getting-started/integration/) and select the `Enphase Envoy raw data` integration.
 
 ![picture of Enphase Integrations](docs/Enphase_Integrations.png "Enphase Envoy raw data custom integration")
 
@@ -60,13 +59,13 @@ As with all Home Assistant configuration changes, first make appropriate backups
 
 When first adding the integration or when adding another Envoy instance, enter below configuration information:
 
-| field| Description |
-|-----|-----|
-| Host | The name or IP address of the Envoy to configure.
-| Username | For firmware version 7.0 and later, enter your Enlighten cloud username. <br> For firmware before 7.0, enter username *installer* without a password. |
-| Password | For firmware version 7.0 and later, enter your Enlighten cloud password <br> For firmware before 7.0, with username *installer*, leave blank. |
-| I want to enter token manually | If you want to enter a token manually, check this option and select **Submit** to switch to the token entry form. Use when your Enphase account uses multi-factor authentication or if you don't want to store username/password in the configuration data.|
-| token | Enter an Envoy access token when in manual token entry mode. Use the link below the field to open the Enphase token portal.|
+| field                          | Description                                                                                                                                                                                                                                                 |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Host                           | The name or IP address of the Envoy to configure.                                                                                                                                                                                                           |
+| Username                       | For firmware version 7.0 and later, enter your Enlighten cloud username. <br> For firmware before 7.0, enter username _installer_ without a password.                                                                                                       |
+| Password                       | For firmware version 7.0 and later, enter your Enlighten cloud password <br> For firmware before 7.0, with username _installer_, leave blank.                                                                                                               |
+| I want to enter token manually | If you want to enter a token manually, check this option and select **Submit** to switch to the token entry form. Use when your Enphase account uses multi-factor authentication or if you don't want to store username/password in the configuration data. |
+| token                          | Enter an Envoy access token when in manual token entry mode. Use the link below the field to open the Enphase token portal.                                                                                                                                 |
 
 The Enlighten cloud username and password for firmware version 7.0 and later will be used to obtain a 1-year-valid token from the enphase web-site when first configured or 1 month before expiry. When in manual token mode you will need to refresh the token manually. A notification will show 1 month before expiry.
 
@@ -85,12 +84,13 @@ Upon successful configuration, the integration can be found in the Home Assistan
 <a name="envoy_config"></a>
 ![picture of configured envoy](docs/Enphase_Envoy_raw_data_added_envoy.png "Configured Envoy with Enphase Envoy raw data custom integration")
 
-
 ![picture of configured envoy device](docs/Enphase_Envoy_raw_data_added_envoy_device.png "Envoy device with Enphase Envoy raw data custom integration")
+
 </details>
 </details>
 
----------------
+---
+
 # Services
 
 ## Read Data
@@ -105,11 +105,11 @@ This service action enables sending a GET request to an Envoy endpoint and recei
 
 ### Action parameters
 
-| Data attribute | Optional | Description |
-|-----|-----|-----|
-| Envoy entry | no | The id of the enphase envoy raw data configuration entry. In UI mode use the pulldown to select it.|
-| Endpoint | no | The endpoint on the envoy to get data for. Must start with /. For example, to get get inverter data, use `/api/v1/production/inverters`.|
-| From cache | yes | When set, does not send request to envoy, but rather get data from previously cached request results. See [cached data](#cached-data).|
+| Data attribute | Optional | Description                                                                                                                              |
+| -------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Envoy entry    | no       | The id of the enphase envoy raw data configuration entry. In UI mode use the pulldown to select it.                                      |
+| Endpoint       | no       | The endpoint on the envoy to get data for. Must start with /. For example, to get get inverter data, use `/api/v1/production/inverters`. |
+| From cache     | yes      | When set, does not send request to envoy, but rather get data from previously cached request results. See [cached data](#cached-data).   |
 
 <details><summary>Developer tools actions Yaml example reading inverter data </summary>
 
@@ -137,8 +137,8 @@ data:
     devType: 1
     lastReportWatts: 0
     maxReportWatts: 362
-
 ```
+
 </details>
 
 ### Cached data
@@ -179,6 +179,7 @@ Response data for endpoint `/api/v1/production/inverters`
     ]
 }
 ```
+
 </details>
 <br>
 
@@ -221,9 +222,10 @@ actions:
       entity_id: input_text.first_inverter
 mode: single
 ```
+
 </details>
 
------------------------
+---
 
 ## Send data
 
@@ -242,14 +244,14 @@ This service action enables sending a PUT, POST or DELETE request to an Envoy en
 
 ### Action parameters
 
-| Data attribute | Optional | Description |
-|-----|-----|-----|
-| Envoy entry | no | The id of the enphase envoy raw data configuration entry. In UI mode use the pulldown to select it.|
-| Endpoint | no | The endpoint on the envoy to send data to. Must start with /. Must be an endpoint that accepts data.|
-| Data | no | JSON string or JSON object to send to Envoy. Format must match endpoint requirements. Requires your expertise.|
-| Risk acknowledgement | no | This should be set to true as confirmation you are accepting the risk of this operation. If not set, the action will return an error. |
-| Send method | no | Specify `PUT`, `POST` or `DELETE`. Which is needed depends on the endpoint and data send. Requires your expertise.|
-| Test mode | no | When set, does not send request to envoy, but rather returns the data as JSON so result can be verified.  See [test mode](#test-mode).|
+| Data attribute       | Optional | Description                                                                                                                           |
+| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Envoy entry          | no       | The id of the enphase envoy raw data configuration entry. In UI mode use the pulldown to select it.                                   |
+| Endpoint             | no       | The endpoint on the envoy to send data to. Must start with /. Must be an endpoint that accepts data.                                  |
+| Data                 | no       | JSON string or JSON object to send to Envoy. Format must match endpoint requirements. Requires your expertise.                        |
+| Risk acknowledgement | no       | This should be set to true as confirmation you are accepting the risk of this operation. If not set, the action will return an error. |
+| Send method          | no       | Specify `PUT`, `POST` or `DELETE`. Which is needed depends on the endpoint and data send. Requires your expertise.                    |
+| Test mode            | no       | When set, does not send request to envoy, but rather returns the data as JSON so result can be verified. See [test mode](#test-mode). |
 
 ### Test mode
 
@@ -291,8 +293,8 @@ data:
     max: "93"
   runtime: "10"
   alert: false
-
 ```
+
 </details>
 
 ### Safe-guards
@@ -302,33 +304,34 @@ By now you should have realized that sending data may be a risky business. Safe-
 - Use a non existing endpoint like `/test` until certain about sending data.
 - Enable `test mode` until certain about sending data.
 
-
 #### Response variable
 
 The response of PUT, POST or DELETE request is returned as JSON with the specified endpoint as key.
-
 
 ## Usage considerations
 
 - Read-data and send-data return a json object with the endpoint as key. When using the data be aware of this. For example endpoint xyz/abc that returns
 
 ```json
-    {"a":"1","b":"2"}
+{ "a": "1", "b": "2" }
 ```
+
         will result in
 
 ```json
-    {"xyz/abc":{"a":"1","b":"2"}}
+{ "xyz/abc": { "a": "1", "b": "2" } }
 ```
 
         To use the data be aware to use `actual_value=result["xyz/abc"]`.
+
 - When using the send-data action service, while also using the core (or other custom) integration, consider triggering a data refresh in the core integration as a next step in the automation. This will assure that any changes in effect by the PUT, POST or DELETE will be read back and are reflected in any core entities.
 - To enable debug logging, either enable it on the integration or add below to your configuration.yaml
+
 ```yaml
-    logger:
-      default: warn
-      logs:
-        custom_components.enphase_envoy_raw_data: debug
+logger:
+  default: warn
+  logs:
+    custom_components.enphase_envoy_raw_data: debug
 ```
 
 ## Credits

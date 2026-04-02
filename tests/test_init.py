@@ -391,7 +391,7 @@ async def test_coordinator_firmware_refresh(
 
     with patch(
         "custom_components.enphase_envoy_raw_data.Envoy.setup",
-        MagicMock(return_value=mock_envoy_setup(mock_envoy)),
+        MagicMock(return_value=mock_envoy_setup(mock_envoy)),  # type: ignore [func-returns-value]
     ):
         freezer.tick(FIRMWARE_REFRESH_INTERVAL)
         async_fire_time_changed(hass)
@@ -431,7 +431,7 @@ async def test_coordinator_firmware_change_detection(
 
     with patch(
         "custom_components.enphase_envoy_raw_data.Envoy.setup",
-        MagicMock(return_value=mock_envoy_setup(mock_envoy)),
+        MagicMock(return_value=mock_envoy_setup(mock_envoy)),  # type: ignore [func-returns-value]
     ):
         await coordinator._async_update_data()  # noqa: SLF001
         await hass.async_block_till_done(wait_background_tasks=True)
