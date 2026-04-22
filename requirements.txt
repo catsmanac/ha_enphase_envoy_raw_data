@@ -2,5 +2,5 @@ pytest-homeassistant-custom-component
 pyenphase>=2.4.0
 colorlog==6.10.1
 homeassistant==2026.3.2
-pip>=21.3.1
+pip>=26.0.1
 ruff==0.15.9
